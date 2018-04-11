@@ -109,9 +109,9 @@ weightMatrix = function(n,
 #' @param extractTestStatisticOnly if TRUE, extract only the DCARS test statistic without permutation testing
 #' @param extractWcorSequence if TRUE, extract only the weighted correlation vector without permutation testing
 #' @param verbose if TRUE, print updates
-#' @param ... arguments passing on to weightMatrix()
+#' @param ... additional arguments passing on to weightMatrix()
 
-#' @return \code{matrix} an n*n matrix is generated corresponding to the weights for each sample
+#' @return either single value (p-value or test statistic), vector (local weighted correlation), or list (combination of above) depending on the input parameters
 
 #' @examples
 #'
@@ -157,7 +157,7 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
   # extractTestStatisticOnly: if TRUE, extract only the DCARS test statistic without permutation testing
   # extractWcorSequence: if TRUE, extract only the weighted correlation vector without permutation testing
   # verbose: if TRUE, print updates
-  # ...: arguments passing on to weightMatrix()
+  # ...: additional arguments passing on to weightMatrix()
 
   if (any(!c(xname,yname) %in% rownames(dat))) {
     message("xname and/or yname are not found in rownames(dat), returning NA")
@@ -217,6 +217,44 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
   return(mean(sds>=stat))
 }
 
+##############################################
+
+#' performs DCARS method across all edges listed in the network for the (already ranked) genes x samples matrix dat
+#'
+#' @title DCARSacrossNetwork
+#' @param dat a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival
+#' @param edgelist is a 2 column character matrix with the genes to test for DCARS. if edgelist has more than 2 columns then the first two are taken
+#' @param edgeNames is the name to assign to each edge, defaults to rownames(edgelist). if edgelist has no rownames then defaults to two gene names pasted with "_" in alphabetical order
+#' @param ... additional parameters passed to DCARS()
+#' @return value of this function depends on arguments passed into the DCARS() function (e.g. if extractTestStatisticOnly is set as TRUE)
+
+#' @examples
+#' data(STRING)
+#' data(SKCM)
+#' SKCM_rank = t(apply(SKCM,1,rank))
+#'
+#' # highly significantly DCARS gene pair: SKP1 and SKP2
+#' # calculates p-value based on permutation
+#' DCARS(SKCM_rank,"SKP1","SKP2",plot=TRUE)
+#' # extract only the test statistic
+#' DCARS(SKCM_rank,"SKP1","SKP2", extractTestStatisticOnly = TRUE)
+#'
+#' # not significantly DCARS gene pair: EIF3C and EIF5B
+#' # calculates p-value based on permutation
+#' DCARS(SKCM_rank,"EIF3C","EIF5B",plot=TRUE)
+#' # extract only the test statistic
+#' DCARS(SKCM_rank,"EIF3C","EIF5B", extractTestStatisticOnly = TRUE)
+#'
+#' # build weight matrix
+#' W = weightMatrix(ncol(SKCM_rank), type = "triangular", span = 0.5, plot = TRUE)
+#'
+#' # extract DCARS test statistics
+#' SKCM_stats = DCARSacrossNetwork(SKCM_rank,edgelist = STRING,
+#'                                 W = W, extractTestStatisticOnly = TRUE,
+#'                                 verbose = FALSE)
+#' sort(SKCM_stats,decreasing=TRUE)[1:10]
+#' @export
+
 DCARSacrossNetwork = function(dat,edgelist,edgeNames = rownames(edgelist),...) {
   # performs DCARS method across all edges listed in the network
   # for the (already ranked) genes x samples matrix dat
@@ -246,6 +284,23 @@ DCARSacrossNetwork = function(dat,edgelist,edgeNames = rownames(edgelist),...) {
 
   return(DCARSresult)
 }
+
+#' Performs Fisher's Z Transformation test for differential correlation.
+#'
+#' @title fisherZtransformTest
+#' @param dat dat is a gene expression matrix (rows genes columns samples)
+#' @param xname the name of the first gene
+#' @param yname name of the second gene
+#' @param classLabels a vector of two class labels, if NULL then split into 50/50. odd number of samples will ignore the middle sample
+#' @return single value for p-value
+
+#' @examples
+#'
+#' data(STRING)
+#' data(SKCM)
+#' fisherZtransformTest(dat = SKCM,xname = "EIF3C",yname = "EIF5B")
+#'
+#' @export
 
 fisherZtransformTest = function(dat,xname,yname,classLabels=NULL) {
   # Fisher Z-transformation test
@@ -315,12 +370,30 @@ fisherZtransformTest = function(dat,xname,yname,classLabels=NULL) {
   return(2*(1-pnorm(dz)))
 }
 
-LinearModelInteractionTest = function(dat,xname,yname, DTD = NULL) {
+
+#' Fits a linear model with interaction term and tests for significance of the interaction term.
+#'
+#' @title LinearModelInteractionTest
+#' @param dat dat is a gene expression matrix (rows genes columns samples)
+#' @param xname the name of the first gene
+#' @param yname name of the second gene
+#' @param response a vector of two class labels, if NULL then split into 50/50. odd number of samples will ignore the middle sample
+#' @return single value for p-value
+
+#' @examples
+#'
+#' data(STRING)
+#' data(SKCM)
+#' LinearModelInteractionTest(dat = SKCM,xname = "EIF3C",yname = "EIF5B")
+#'
+#' @export
+
+LinearModelInteractionTest = function(dat,xname,yname, response = NULL) {
   # Fitting linear model and testing for interaction effect
   # dat is a gene expression matrix. rows are genes and columns samples
   # xname is the name of the first gene
   # yname is name of the second gene
-  # DTD = days to death, survival information (assuming all are uncensored)
+  # response = continuous response, e.g. survival information (assuming all are uncensored)
   # returns the p-value from this test
 
   if (any(!c(xname,yname) %in% rownames(dat))) {
@@ -331,13 +404,11 @@ LinearModelInteractionTest = function(dat,xname,yname, DTD = NULL) {
   x = dat[xname,]
   y = dat[yname,]
 
-  if (is.null(DTD)) {
-    surv = 1:length(x)
-  } else {
-    surv = DTD
+  if (is.null(response)) {
+    response = 1:length(x)
   }
 
-  fit = lm(surv ~ x*y) # this tests the interaction effect between x and y
+  fit = lm(response ~ x*y) # this tests the interaction effect between x and y
   return(summary(fit)$coef[4,4])
 
 }

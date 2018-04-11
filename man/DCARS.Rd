@@ -32,12 +32,12 @@ DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
 
 \item{verbose}{if TRUE, print updates}
 
-\item{...}{arguments passing on to weightMatrix()}
+\item{...}{additional arguments passing on to weightMatrix()}
 
 \item{extractWcorSequence}{if TRUE, extract only the weighted correlation vector without permutation testing}
 }
 \value{
-\code{matrix} an n*n matrix is generated corresponding to the weights for each sample
+either single value (p-value or test statistic), vector (local weighted correlation), or list (combination of above) depending on the input parameters
 }
 \description{
 the DCARS function

@@ -4,8 +4,7 @@ Title: Differential Correlation across Ranked Samples
 Version: 0.1.0
 Author: Shila Ghazanfar
 Maintainer: Shila Ghazanfar <shazanfar@gmail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: DCARS is a flexible statistical approach which uses local weighted correlations to build a powerful and robust statistical test to identify significant variation in levels of concordance across a ranking of samples. This has the potential to discover biologically informative relationships between genes across a variable of interest, such as survival outcome.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
