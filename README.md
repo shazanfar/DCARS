@@ -54,7 +54,3 @@ sort(SKCM_stats,decreasing=TRUE)[1:10]
 
 * **Shila Ghazanfar**  - [@shazanfar](https://twitter.com/shazanfar)
 
-[comment]: ## Acknowledgments
-[comment]: * Hat tip to anyone who's code was used
-[comment]: * Inspiration
-[comment]: * etc
