@@ -1,17 +1,3 @@
-.weightedcor = function(x,y,w) {
-
-  # calculates weighted correlation between x and y
-  # x and y are data vectors
-  # w is a weight vector
-
-  nw = sum(w)
-  wssx = nw*sum(w*(x^2)) - sum(w*x)^2
-  wssy = nw*sum(w*(y^2)) - sum(w*y)^2
-  wssxy = nw*sum(w*x*y) - sum(w*x)*sum(w*y)
-  wcor = wssxy/sqrt(wssx*wssy)
-  return(wcor)
-}
-
 #' the weightMatrix function
 #'
 #' @title weightMatrix
@@ -29,7 +15,6 @@
 #' weightMatrix(100, type = "block", plot = TRUE)
 #' weightMatrix(100, type = "harmonic", plot = TRUE)
 #'
-#' @rdname weightMatrix
 #' @export
 
 weightMatrix = function(n,
@@ -107,23 +92,60 @@ weightMatrix = function(n,
   return(W)
 }
 
+##############################################
 
-DCARS = function(dat,
-                xname,
-                yname,
-                W=NULL,
-                rangeMin = 0,
-                wcormin = 0,
-                statmin = 0,
-                extractTestStatisticOnly = FALSE,
-                extractWcorSequenceOnly = FALSE,
-                plot = FALSE,
-                niter = 100,
-                verbose = FALSE,
-                ...) {
+#' the DCARS function
+#'
+#' @title DCARS
+#' @param dat a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival
+#' @param xname name of row of dat to test together with yname
+#' @param yname name of row of dat to test together with xname
+#' @param W weight matrix for weighted correlations,
+#' @param rangeMin minimum range of weighted correlation vector to include for permutation testing
+#' @param wcormin minimum absolute value weighted correlation vector to include for permutation testing
+#' @param statmin minimum value DCARS test statistic to include for permutation testing
+#' @param plot if TRUE plot observed weighted correlatin vector
+#' @param niter number of iterations for permutation testing
+#' @param extractTestStatisticOnly if TRUE, extract only the DCARS test statistic without permutation testing
+#' @param extractWcorSequence if TRUE, extract only the weighted correlation vector without permutation testing
+#' @param verbose if TRUE, print updates
+#' @param ... arguments passing on to weightMatrix()
 
-  # dat: is a genes x samples gene expression rank matrix, should be already converted to ranks
-  # with first column lowest survival and last column highest survival
+#' @return \code{matrix} an n*n matrix is generated corresponding to the weights for each sample
+
+#' @examples
+#'
+#' data(STRING)
+#' data(SKCM)
+#' SKCM_rank = t(apply(SKCM,1,rank))
+#'
+#' # highly significantly DCARS gene pair: SKP1 and SKP2
+#' # calculates p-value based on permutation
+#' DCARS(SKCM_rank,"SKP1","SKP2",plot=TRUE)
+#' # extract only the test statistic
+#' DCARS(SKCM_rank,"SKP1","SKP2", extractTestStatisticOnly = TRUE)
+#'
+#' # not significantly DCARS gene pair: EIF3C and EIF5B
+#' # calculates p-value based on permutation
+#' DCARS(SKCM_rank,"EIF3C","EIF5B",plot=TRUE)
+#' # extract only the test statistic
+#' DCARS(SKCM_rank,"EIF3C","EIF5B", extractTestStatisticOnly = TRUE)
+#'
+#' # build weight matrix
+#' W = weightMatrix(ncol(SKCM_rank), type = "triangular", span = 0.5, plot = TRUE)
+#'
+#' # extract DCARS test statistics
+#' SKCM_stats = DCARSacrossNetwork(SKCM_rank,edgelist = STRING,
+#'                                 W = W, extractTestStatisticOnly = TRUE,
+#'                                 verbose = FALSE)
+#' sort(SKCM_stats,decreasing=TRUE)[1:10]
+#'
+#' @export
+
+
+DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,extractTestStatisticOnly = FALSE,extractWcorSequenceOnly = FALSE,plot = FALSE,niter = 100,verbose = FALSE,...) {
+
+  # dat: is a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival
   # xname: name of row of dat to test together with yname
   # yname: name of row of dat to test together with xname
   # W: weight matrix for weighted correlations,
@@ -318,4 +340,19 @@ LinearModelInteractionTest = function(dat,xname,yname, DTD = NULL) {
   fit = lm(surv ~ x*y) # this tests the interaction effect between x and y
   return(summary(fit)$coef[4,4])
 
+}
+
+
+.weightedcor = function(x,y,w) {
+
+  # calculates weighted correlation between x and y
+  # x and y are data vectors
+  # w is a weight vector
+
+  nw = sum(w)
+  wssx = nw*sum(w*(x^2)) - sum(w*x)^2
+  wssy = nw*sum(w*(y^2)) - sum(w*y)^2
+  wssxy = nw*sum(w*x*y) - sum(w*x)*sum(w*y)
+  wcor = wssxy/sqrt(wssx*wssy)
+  return(wcor)
 }
