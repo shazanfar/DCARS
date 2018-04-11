@@ -1,5 +1,3 @@
-# This version different to GitHub now!
-
 # DCARS: Differential correlation across ranked samples
 # Last updated: 11 April 2018
 # By: Shila Ghazanfar
@@ -183,7 +181,7 @@ DCARS = function(dat,
   return(mean(sds>=stat))
 }
 
-DCARSacrossNetwork = function(dat,edgelist,edgeNames = NULL,...) {
+DCARSacrossNetwork = function(dat,edgelist,edgeNames = rownames(edgelist),...) {
   # performs DCARS method across all edges listed in the network
   # for the (already ranked) genes x samples matrix dat
   # value of this function depends on arguments passed into the DCARS() function
