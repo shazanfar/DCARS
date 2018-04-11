@@ -414,7 +414,25 @@ LinearModelInteractionTest = function(dat,xname,yname, response = NULL) {
 }
 
 
-.weightedcor = function(x,y,w) {
+#' calculates weighted correlation between x and y
+#'
+#' @title weightedcor
+#' @param x x and y are data vectors
+#' @param y x and y are data vectors
+#' @param w weight vector
+#' @return weighted correlation value between x and y
+
+#' @examples
+#'
+#' x = rnorm(100)
+#' y = rnorm(100)
+#' w = runif(100)
+#' weightedcor(x,y,w)
+#'
+#' @export
+
+
+weightedcor = function(x,y,w) {
 
   # calculates weighted correlation between x and y
   # x and y are data vectors
