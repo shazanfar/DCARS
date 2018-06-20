@@ -445,3 +445,67 @@ weightedcor = function(x,y,w) {
   wcor = wssxy/sqrt(wssx*wssy)
   return(wcor)
 }
+
+#' the stratifiedSample function
+#'
+#' @title stratifiedSample
+#' @param stats a vector of statistics
+#' @return \code{vector} a vector of indices for the statistics that should be used for permutation testing
+
+#' @examples
+#'
+#'stats = rnorm(5000)
+#'sampleindices = stratifiedSample(stats)
+#'length(sampleindices)
+#'
+#' @export
+#'
+stratifiedSample = function(stats) {
+  # takes in a vector of statistics, and returns a vector of indices for the statistics that should be used for permutation testing
+  ranges = range(stats)
+  fac = cut(stats,seq(from = 0, to = ranges[2], length.out = 101))
+  nsamps = 3
+  sampleindices = unlist(tapply(1:length(stats),fac,function(x){
+    if (length(x)<nsamps) return(x)
+    sample(x,nsamps,replace = FALSE)
+  }))
+  sampleindices = unique(sampleindices[!is.na(sampleindices)])
+  # length(sampleindices)
+  return(sampleindices)
+}
+
+
+
+#' the getLoessCriticalValue function
+#'
+#' @title getLoessCriticalValue
+#' @param stats a vector of DCARS test statistics for which permutation testing has been done
+#' @param pvals a vector of pvals for DCARS test
+#' @param signifValue significance value (default 0.05)
+#' @param plot logical (default FALSE)
+#' @return \code{numeric} a critical value for the unadjusted significance value
+
+#' @examples
+#'
+#'stats = rchisq(100,1)
+#'pvals = 1 - pchisq(stats,1)
+#'criticalValue = getLoessCriticalValue(stats, pvals, plot = TRUE)
+#'criticalValue
+#'
+#' @export
+#'
+getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE) {
+  if (length(stats) != length(pvals)) stop("stats and pvals vectors should be equal in length!")
+
+  lw = loess(pvals~stats)
+  # points(x[1:ceiling(0.9*nrow(x)),1],lw$fitted[1:ceiling(0.9*nrow(x))], type = "l", col = "red")
+  lwval = which(sapply(1:(length(stats)-1),function(i)lw$fitted[i]>signifValue & lw$fitted[i+1]<signifValue))[1]
+  criticalValue = as.numeric(stats[lwval])
+  if (plot) {
+    plot(stats, pvals)
+    points(stats[1:ceiling(0.9*length(stats))],lw$fitted[1:ceiling(0.9*length(stats))], type = "l", col = "red")
+    abline(v = criticalValue, h = signifValue, col = "blue", lwd = 2, lty = 2)
+    legend("topright", bty = "n", legend = paste0("Critical value for P = ",signifValue, ": ", signif(criticalValue, 3)))
+  }
+  return(criticalValue)
+}
