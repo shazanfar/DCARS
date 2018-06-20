@@ -44,10 +44,43 @@ DCARS(SKCM_rank,"EIF3C","EIF5B", extractTestStatisticOnly = TRUE)
 W = weightMatrix(ncol(SKCM_rank), type = "triangular", span = 0.5, plot = TRUE)
 
 # extract DCARS test statistics
+# should take about 30 seconds
 SKCM_stats = DCARSacrossNetwork(SKCM_rank,edgelist = STRING,
                                 W = W, extractTestStatisticOnly = TRUE,
                                 verbose = FALSE)
 sort(SKCM_stats,decreasing=TRUE)[1:10]
+
+# use speed-up to find significant (P = 0.05 unadjusted) gene pairs
+# first take a stratified sample of gene pairs
+sampleindices = stratifiedSample(SKCM_stats)
+# then calculate their p-values using permutation testing
+# this takes about 1 minute to run
+# you can increase the number of iterations (niter) for a tighter graph
+# but at the risk of longer runtimes
+pvals = DCARSacrossNetwork(SKCM_rank,
+                           edgelist = STRING[sampleindices,],
+                           W = W, 
+                           niter = 100,
+                           verbose = FALSE)
+# now calculate the critical value at P=0.05 using loess smoothing
+criticalValue = getLoessCriticalValue(SKCM_stats[sampleindices], pvals, plot = TRUE)
+
+# how many significant gene pairs do we have?
+table(SKCM_stats > criticalValue)
+
+# extract these significant edges
+SKCM_signif_edges = STRING[SKCM_stats > criticalValue,]
+
+# and graph them as a network
+library(igraph)
+SKCM_signif_graph = graph.edgelist(SKCM_signif_edges, directed = FALSE)
+V(SKCM_signif_graph)$size = 0.01
+V(SKCM_signif_graph)$label.cex = 0.4
+plot(SKCM_signif_graph)
+
+# extract network communities and plot
+cm = walktrap.community(SKCM_signif_graph)
+plot(cm, SKCM_signif_graph)
 ```
 
 ## Author
