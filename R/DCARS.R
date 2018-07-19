@@ -108,6 +108,7 @@ weightMatrix = function(n,
 #' @param niter number of iterations for permutation testing
 #' @param extractTestStatisticOnly if TRUE, extract only the DCARS test statistic without permutation testing
 #' @param extractWcorSequence if TRUE, extract only the weighted correlation vector without permutation testing
+#' @param extractPermutationTestStatistics if TRUE, extract only the DCARS test statistic without permutation testing
 #' @param verbose if TRUE, print updates
 #' @param ... additional arguments passing on to weightMatrix()
 
@@ -143,7 +144,7 @@ weightMatrix = function(n,
 #' @export
 
 
-DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,extractTestStatisticOnly = FALSE,extractWcorSequenceOnly = FALSE,plot = FALSE,niter = 100,verbose = FALSE,...) {
+DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,extractTestStatisticOnly = FALSE,extractWcorSequenceOnly = FALSE,plot = FALSE,niter = 100,extractPermutationTestStatistics = FALSE,verbose = FALSE,...) {
 
   # dat: is a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival
   # xname: name of row of dat to test together with yname
@@ -156,6 +157,7 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
   # niter: number of iterations for permutation testing
   # extractTestStatisticOnly: if TRUE, extract only the DCARS test statistic without permutation testing
   # extractWcorSequence: if TRUE, extract only the weighted correlation vector without permutation testing
+  # extractPermutationTestStatistics if TRUE extracts the set of permuted DCARS statistics
   # verbose: if TRUE, print updates
   # ...: additional arguments passing on to weightMatrix()
 
