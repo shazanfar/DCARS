@@ -63,7 +63,7 @@ pvals = DCARSacrossNetwork(SKCM_rank,
                            niter = 100,
                            verbose = FALSE)
 # now calculate the critical value at P=0.05 using loess smoothing
-criticalValue = getLoessCriticalValue(SKCM_stats[sampleindices], pvals, plot = TRUE)
+criticalValue = getLoessCriticalValue(SKCM_stats[sampleindices], pvals, signifValue = 0.05, plot = TRUE)
 
 # how many significant gene pairs do we have?
 table(SKCM_stats > criticalValue)
