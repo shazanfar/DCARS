@@ -216,6 +216,12 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
     sd(wcor)
   })
 
+  if (extractPermutationTestStatistics) {
+    print("extract permuted test statistics")
+    # return(list(PermutedTestStatistics=sds))
+    return(list(PermutedTestStatistics = sds))
+  }
+
   return(mean(sds>=stat))
 }
 
