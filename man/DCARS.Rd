@@ -7,7 +7,7 @@
 DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
   statmin = 0, extractTestStatisticOnly = FALSE,
   extractWcorSequenceOnly = FALSE, plot = FALSE, niter = 100,
-  verbose = FALSE, ...)
+  extractPermutationTestStatistics = FALSE, verbose = FALSE, ...)
 }
 \arguments{
 \item{dat}{a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival}
@@ -29,6 +29,8 @@ DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
 \item{plot}{if TRUE plot observed weighted correlatin vector}
 
 \item{niter}{number of iterations for permutation testing}
+
+\item{extractPermutationTestStatistics}{if TRUE, extract only the DCARS test statistic without permutation testing}
 
 \item{verbose}{if TRUE, print updates}
 
