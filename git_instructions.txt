@@ -1,0 +1,9 @@
+git config --global user.email "shazanfar@gmail.com"
+git config --global user.name "shazanfar"
+
+git remote add origin https://github.com/shazanfar/cellAggregator.git
+git config remote.origin.url git@github.com:shazanfar/cellAggregator.git
+git pull -u origin master
+git push -u origin master
+
+roxygen2::roxygenise()
