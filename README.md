@@ -128,11 +128,11 @@ E(SKCM_graph)$weight = SKCM_stats
 
 SKCM_meanStrength = strength(SKCM_graph, weights = E(SKCM_graph)$weight)/degree(SKCM_graph)
 
+topNodes = names(degree(SKCM_graph))[order(SKCM_meanStrength, decreasing = TRUE)[1:20]]
+
 plot(degree(SKCM_graph), SKCM_meanStrength)
 text(degree(SKCM_graph)[topNodes], SKCM_meanStrength[topNodes],
      names(degree(SKCM_graph)[topNodes]))
-
-topNodes = names(degree(SKCM_graph))[order(SKCM_meanStrength, decreasing = TRUE)[1:20]]
 
 library(ggplot2)
 library(ggrepel)
