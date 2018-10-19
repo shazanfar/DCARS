@@ -203,7 +203,9 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
   if (max(abs(wcor)) < wcormin) return(NA)
 
   # perform permutation test
-  message("performing permutation test")
+  if (verbose) {
+    message("performing permutation test")
+  }
   sds = replicate(niter,{
     o = sample(1:length(x))
     xo = x[o]
@@ -217,7 +219,9 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
   })
 
   if (extractPermutationTestStatistics) {
-    print("extract permuted test statistics")
+    if (verbose) {
+      print("extract permuted test statistics")
+    }
     # return(list(PermutedTestStatistics=sds))
     return(list(PermutedTestStatistics = sds))
   }
