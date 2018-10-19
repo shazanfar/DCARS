@@ -217,7 +217,9 @@ DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,ext
   })
 
   if (extractPermutationTestStatistics) {
-    print("extract permuted test statistics")
+    if (verbose) {
+      print("extract permuted test statistics")
+    }
     # return(list(PermutedTestStatistics=sds))
     return(list(PermutedTestStatistics = sds))
   }
