@@ -521,3 +521,81 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
   }
   return(criticalValue)
 }
+
+
+#' the plotColouredExpression function
+#'
+#' @title plotColouredExpression plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
+#' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
+#' @param genepair is either a single character string with an underscore, or a two length characer vector
+#' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
+#' @return \code{ggplot} a critical value for the unadjusted significance value
+
+#' @examples
+#'
+#'
+#'
+#'
+#'
+#'
+#' @export
+#'
+plotColouredExpression = function(branchData, genepair, subsetBranch = NULL) {
+
+  require(ggplot2)
+
+  # branchData is a list containing matrices of the cell expression per branch
+  # assumed that the columns of each matrix in branchData is ordered by pseudotime
+  # if branchData is not given as a list, it will be converted into a list containing branchData
+  # genepair is either a single character string with an underscore, or a two length characer vector
+  # subsetBranch is a character vector containing the names of the branches to be plotted
+  # if NULL it will plot all branches
+
+  if (length(genepair) == 1) {
+    genepair = unlist(strsplit(genepair, "_"))
+  } else {
+    genepair = genepair[1:2]
+  }
+
+  if (!is.list(branchData)) {
+    branchData = list(Branch = branchData)
+  }
+
+  if (is.null(names(branchData))) {
+    names(branchData) <- paste0("Branch_",1:length(branchData))
+  }
+
+  gdf = do.call(rbind,lapply(branchData, function(branch){
+    gdf_list_1 = data.frame(
+      Sample = colnames(branch),
+      order = 1:ncol(branch),
+      ExpressionGene1 = branch[genepair[1],],
+      ExpressionGene2 = branch[genepair[2],]
+    )
+    gdf_list_1$ordercut = cut(gdf_list_1$order, 3, labels = c("Early","Middle","Late"))
+    return(gdf_list_1)
+  }))
+
+  gdf$branch = rep(names(branchData), times = unlist(lapply(branchData, ncol)))
+
+  if (!is.null(subsetBranch)) {
+    gdf_sub = subset(gdf, branch %in% subsetBranch)
+    if (nrow(gdf_sub) == 0) stop("no branches with names in subsetBranch, please re-run with correct names (should match names of branchData)")
+  } else {
+    gdf_sub = gdf
+  }
+
+  g = ggplot(gdf_sub,aes(x = ExpressionGene1, y = ExpressionGene2, color = order)) +
+    geom_point(show.legend = FALSE) +
+    facet_grid(branch~ordercut, scales = "free_y") +
+    scale_color_gradientn(colours = c("orange","blue")) +
+    xlab(genepair[1]) +
+    ylab(genepair[2]) +
+    theme_minimal() +
+    geom_smooth(colour = "black", fill = NA, linetype = "dashed",
+                method = "lm") +
+    NULL
+
+  return(g)
+}
+

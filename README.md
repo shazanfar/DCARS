@@ -34,6 +34,9 @@ DCARS(SKCM_rank,"SKP1","SKP2",plot=TRUE)
 # extract only the test statistic
 DCARS(SKCM_rank,"SKP1","SKP2", extractTestStatisticOnly = TRUE)
 
+# plot scatterplot split by early, mid, late in the sample ranking
+plotColouredExpression(SKCM, genepair = c("SKP1","SKP2"))
+
 # not significantly DCARS gene pair: EIF3C and EIF5B
 # calculates p-value based on permutation
 DCARS(SKCM_rank,"EIF3C","EIF5B",plot=TRUE)
