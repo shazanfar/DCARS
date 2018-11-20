@@ -838,3 +838,114 @@ plotOrderedExpression = function(branchData, gene, xvals = NULL, subsetBranch = 
 
   return(g)
 }
+
+
+
+
+#' the plotNetworkPathway function
+#'
+#' @title plotNetworkPathway plots network graphs with most represented pathways labelled
+#' @param sigPairsList list of significant pairs for branches, in igraph network form
+#' @param minCommunity minimum number of genes in community to annotate most represented
+#' @param pathways is a named list containing gene sets for querying, if left NULL defaults to REACTOME c2.all.v6.1.symbols.gmt downloaded from MSigDB
+#' @param geneUniverse is the universe of genes measured, if null its taken as all the sigpairs
+#' @return \code{plot} plots of igraph objects
+#'
+#' @examples
+#'
+#'
+#'
+#'
+#' @export
+#'
+plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, geneUniverse = NULL) {
+
+  require(igraph)
+
+  # sigPairsList list of significant pairs for branches, in igraph network form
+  # minCommunity minimum number of genes in community to annotate most represented
+  # pathways is a named list containing gene sets for querying, if left NULL defaults to REACTOME c2.all.v6.1.symbols.gmt downloaded from MSigDB
+  # geneUniverse is the universe of genes measured, if null its taken as all the sigpairs
+
+  if (is.null(pathways)) {
+    data(hallmarks)
+  } else {
+    hallmarks = pathways
+  }
+
+  if (is.null(geneUniverse)) {
+    geneUniverse = unique(unlist(lapply(sigPairsList, function(net) V(net)$name)))
+  }
+
+  if (class(sigPairsList) != "list") {
+    sigPairsList = list(sigPairsList)
+  }
+
+
+  lyList = lapply(sigPairsList, function(net) {
+    ly = layout.auto(net)
+    ly = apply(ly,2,function(x) {
+      2*(-0.5 + (x - min(x))/(max(x) - min(x)))
+    })
+    return(ly)
+  })
+
+  cmList = lapply(sigPairsList, walktrap.community)
+  cmmembershipList = lapply(cmList,membership)
+  cm_coordsList = sapply(names(cmList), function(branch) {
+    cbind(tapply(lyList[[branch]][,1],cmmembershipList[[branch]],mean),
+          tapply(lyList[[branch]][,2],cmmembershipList[[branch]],mean))
+  }, simplify = FALSE)
+  cm_nList = sapply(names(cmList), function(branch) {
+    tapply(lyList[[branch]][,1],cmmembershipList[[branch]],length)
+  }, simplify = FALSE)
+
+  message("Calculating most highly represented pathways")
+
+  cm_mostrepresentedList = sapply(names(cmList), function(branch) {
+
+    cm_mostrepresented = sapply(unique(cmmembershipList[[branch]]), function(i){
+      # print(i)
+      genes = intersect(allhallmarks,
+                        toupper(names(cmmembershipList[[branch]][cmmembershipList[[branch]] == i])))
+      if (length(genes) == 0) return("")
+      allgenes = intersect(allhallmarks, toupper(geneUniverse))
+
+      # calculate the smallest set with the highest membership proportion
+      hallmarksn = unlist(lapply(hallmarks, function(x)length(intersect(x,allgenes))))
+      hallmarksmembership = unlist(lapply(hallmarks,function(hallmark){
+        mean(genes %in% intersect(hallmark,allgenes))
+      }))
+      if (sum(hallmarksmembership == max(hallmarksmembership)) == 1) {
+        return(names(sort(hallmarksmembership, decreasing = TRUE)[1]))
+      } else {
+        # hallmarksmembershipmax = hallmarksmembership[hallmarksmembership == max(hallmarksmembership)]
+        hallmarksnmax = hallmarksn[hallmarksmembership == max(hallmarksmembership)]
+        return(names(sort(hallmarksnmax)[1]))
+      }
+    })
+    names(cm_mostrepresented) <- unique(cmmembershipList[[branch]])
+    return(cm_mostrepresented)
+  })
+
+  message("Plotting network graphs")
+
+  par(mfrow=c(length(cmList),2))
+
+  for (i in names(cmList)) {
+
+    plot(sigPairsList[[i]],vertex.size = 0, vertex.label.cex = 0.8, vertex.color = "grey",
+         edge.width = 2, layout = lyList[[i]], ylab = i,
+         vertex.label.color = "black")
+
+    plot(sigPairsList[[i]],vertex.size = 2, vertex.label.cex = 0.01, vertex.color = "grey",
+         edge.width = 2, layout = lyList[[i]],
+         vertex.label.color = "black")
+
+    text(cm_coordsList[[i]][cm_nList[[i]] >= minCommunity,1],
+         cm_coordsList[[i]][cm_nList[[i]] >= minCommunity,2],
+         cm_mostrepresentedList[[i]][cm_nList[[i]] >= minCommunity],
+         cex = 0.7)
+  }
+
+}
