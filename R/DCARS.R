@@ -873,6 +873,8 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
     hallmarks = pathways
   }
 
+  allhallmarks = unique(unlist(hallmarks))
+
   if (is.null(geneUniverse)) {
     geneUniverse = unique(unlist(lapply(sigPairsList, function(net) V(net)$name)))
   }
