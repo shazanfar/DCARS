@@ -756,6 +756,7 @@ plotWCorLine = function(wcorsList, gene) {
 #' @title plotOrderedExpression plots expression vectors along branches and genes as ribbon plots
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
 #' @param gene is either a single character string with an underscore, or a two length characer vector
+#' @param xvals is a list containing the x-values associated with the samples in branchData (if NULL, samples will just be plotted against their rank)
 #' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
 #' @param facet can either be FALSE, "branch", "gene", or "both"
 #' @return \code{ggplot} a ggplot object for ribbon plot with points
@@ -767,12 +768,13 @@ plotWCorLine = function(wcorsList, gene) {
 #'
 #' @export
 #'
-plotOrderedExpression = function(branchData, gene, subsetBranch = NULL, facet = FALSE) {
+plotOrderedExpression = function(branchData, gene, xvals = NULL, subsetBranch = NULL, facet = FALSE) {
 
   # branchData is a list containing matrices of the cell expression per branch
   # assumed that the columns of each matrix in branchData is ordered by pseudotime
   # if branchData is not given as a list, it will be converted into a list containing branchData
   # gene is either a single character string with an underscore, or a two length characer vector
+  # xvals is a list containing the x-values associated with the samples in branchData (if NULL, samples will just be plotted against their rank)
   # subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
   # facet can either be FALSE, "branch", "gene", or "both"
 
@@ -808,6 +810,11 @@ plotOrderedExpression = function(branchData, gene, subsetBranch = NULL, facet = 
     if (nrow(gdf_sub) == 0) stop("no branches with names in subsetBranch, please re-run with correct names (should match names of branchData)")
   } else {
     gdf_sub = gdf
+  }
+
+  if (!is.null(xvals)) {
+    xval = apply(as.matrix(gdf_sub), 1, function(x)xvals[[x["branch"]]][as.numeric(x["order"])])
+    gdf_sub$order <- xval
   }
 
   g = ggplot(gdf_sub, aes(x = order, y = ExpressionGene, colour = gene, fill = gene, linetype = branch, shape = branch)) +
