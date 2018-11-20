@@ -880,7 +880,7 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
   }
 
   if (class(sigPairsList) != "list") {
-    sigPairsList = list(sigPairsList)
+    sigPairsList = list(Branch = sigPairsList)
   }
 
 
