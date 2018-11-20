@@ -14,7 +14,7 @@ plotColouredExpression(branchData, genepair, subsetBranch = NULL)
 \item{subsetBranch}{subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches}
 }
 \value{
-\code{ggplot} a critical value for the unadjusted significance value
+\code{ggplot} a ggplot object of scatterplots of expression split by sample ordering
 }
 \description{
 the plotColouredExpression function

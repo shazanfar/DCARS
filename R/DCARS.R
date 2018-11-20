@@ -529,7 +529,7 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
 #' @param genepair is either a single character string with an underscore, or a two length characer vector
 #' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
-#' @return \code{ggplot} a critical value for the unadjusted significance value
+#' @return \code{ggplot} a ggplot object of scatterplots of expression split by sample ordering
 
 #' @examples
 #'
@@ -745,6 +745,89 @@ plotWCorLine = function(wcorsList, gene) {
     geom_hline(yintercept = 0, size = 1, colour = "grey") +
     ggtitle(gene) +
     NULL
+
+  return(g)
+}
+
+
+
+#' the plotOrderedExpression function
+#'
+#' @title plotOrderedExpression plots expression vectors along branches and genes as ribbon plots
+#' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
+#' @param gene is either a single character string with an underscore, or a two length characer vector
+#' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
+#' @param facet can either be FALSE, "branch", "gene", or "both"
+#' @return \code{ggplot} a ggplot object for ribbon plot with points
+#'
+#' @examples
+#'
+#'
+#'
+#'
+#' @export
+#'
+plotOrderedExpression = function(branchData, gene, subsetBranch = NULL, facet = FALSE) {
+
+  # branchData is a list containing matrices of the cell expression per branch
+  # assumed that the columns of each matrix in branchData is ordered by pseudotime
+  # if branchData is not given as a list, it will be converted into a list containing branchData
+  # gene is either a single character string with an underscore, or a two length characer vector
+  # subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
+  # facet can either be FALSE, "branch", "gene", or "both"
+
+  require(ggplot2)
+
+  if (!is.list(branchData)) {
+    branchData = list(Branch = branchData)
+  }
+
+  if (is.null(names(branchData))) {
+    names(branchData) <- paste0("Branch_",1:length(branchData))
+  }
+
+  gdf_list = sapply(gene, function(g) {
+
+    gdf = do.call(rbind,lapply(branchData, function(branch){
+      gdf_list_1 = data.frame(
+        Sample = colnames(branch),
+        order = 1:ncol(branch),
+        ExpressionGene = branch[g,],
+        gene = g
+      )
+      return(gdf_list_1)
+    }))
+    gdf$branch = rep(names(branchData), times = unlist(lapply(branchData, ncol)))
+    return(gdf)
+  }, simplify = FALSE)
+
+  gdf = do.call(rbind,gdf_list)
+
+  if (!is.null(subsetBranch)) {
+    gdf_sub = subset(gdf, branch %in% subsetBranch)
+    if (nrow(gdf_sub) == 0) stop("no branches with names in subsetBranch, please re-run with correct names (should match names of branchData)")
+  } else {
+    gdf_sub = gdf
+  }
+
+  g = ggplot(gdf_sub, aes(x = order, y = ExpressionGene, colour = gene, fill = gene, linetype = branch, shape = branch)) +
+    geom_point() +
+    labs(fill = "Gene", col = "Branch") +
+    theme_minimal() + geom_smooth() +
+    ggtitle(paste0(gene, collapse = ", ")) +
+    NULL
+
+  if (facet == "branch") {
+    g = g + facet_grid(~branch)
+  }
+
+  if (facet == "gene") {
+    g = g + facet_grid(gene~.)
+  }
+
+  if (facet == "both") {
+    g = g + facet_grid(gene~branch)
+  }
 
   return(g)
 }
