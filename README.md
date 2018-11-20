@@ -6,7 +6,9 @@ Differential Correlation across Ranked Samples
 Overview
 --------
 
-**DCARS** is a flexible statistical approach which uses local weighted correlations to build a powerful and robust statistical test to identify significant variation in levels of concordance across a ranking of samples. This has the potential to discover biologically informative relationships between genes across a variable of interest, such as survival outcome.
+**DCARS** is a flexible statistical approach which uses local weighted correlations to build a powerful and robust statistical test to identify significant variation in levels of concordance across a ranking of samples. This has the potential to discover biologically informative relationships between genes across a variable of interest, such as survival outcome. Read more about **DCARS** in [Bioinformatics](https://doi.org/10.1093/bioinformatics/bty698) journal.
+
+
 
 Installation
 --------
