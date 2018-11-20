@@ -599,3 +599,73 @@ plotColouredExpression = function(branchData, genepair, subsetBranch = NULL) {
   return(g)
 }
 
+
+
+#' the plotEgoNetwork function
+#'
+#' @title plotEgoNetwork plots network graphs with edges coloured by weights in the network
+#' @param hubnode is a character vector of node(s) to include as hub nodes
+#' @param g is an igraph network, with E(g)[[weight]] given as DCARS test statistics
+#' @param subset is a logical asking if you should subset based on the weight (default FALSE)
+#' @param thresh is the subset weight threshold
+#' @return \code{igraph} object containing the network graphed. Produces an igraph plot
+
+#' @examples
+#'
+#'
+#'
+#'
+#'
+#'
+#' @export
+#'
+plotEgoNetwork = function(hubnode, network, weight = "weight", subset = FALSE, thresh = NULL) {
+
+  require(igraph)
+
+  # hubnode is a character vector of node(s) to include as hub nodes
+  # g is an igraph network, with E(g)[[weight]] given as DCARS test statistics
+  # weight is a character vector containing edge weights, associated with different branches
+  # subset is a logical asking if you should subset based on the weight
+  # thresh is the subset weight threshold
+
+  nodes = unique(names(unlist(neighborhood(network, nodes = hubnode))))
+  subego = induced.subgraph(network, vids = nodes)
+  subego = simplify(subego, edge.attr.comb="mean")
+
+  if (subset) {
+    if (!all(weight %in% names(edge_attr(subego)))) {
+      stop("at least one weight missing from edge attributes, either re-specify weights or rerun with subset = FALSE")
+    }
+    if (is.null(thresh)) {
+      message("no threshold given, using 0 as default")
+      thresh = 0
+    }
+    keepedges = apply(sapply(weight, function(w) edge_attr(subego)[[w]] > thresh,
+                             simplify = TRUE),1,any)
+    subego = subgraph.edges(subego, which(keepedges))
+  }
+
+  V(subego)$color = "beige"
+  V(subego)$label.color = "black"
+  V(subego)$label.family = "sans"
+  V(subego)$label.cex = 0.7
+  V(subego)$size = 20
+  V(subego)$frame.color = "black"
+  V(subego)$frame.size = 5
+  lyout = layout.davidson.harel(subego)
+  width = 5
+
+  maxval = ceiling(max(50*unlist(edge_attr(subego)[weight])))
+  colvals = colorRampPalette(c("grey","red"))(maxval)
+
+  par(mfrow=c(1,length(weight)))
+  for (i in weight) {
+    plot(subego, layout = lyout,
+         edge.color = colvals[ceiling(50*edge_attr(subego)[[i]])],
+         edge.width = width,
+         xlab = i,
+         main = hubnode)
+  }
+  return(subego)
+}

@@ -128,6 +128,13 @@ Treating DCARS statistics as a network edge weight
 library(igraph)
 SKCM_graph = graph.edgelist(STRING, directed = FALSE)
 E(SKCM_graph)$weight = SKCM_stats
+E(SKCM_graph)$pvalweight = -log10(permpvals)
+
+# Graph the Ego network associated with SKP1 with 
+plotEgoNetwork(hubnode = c("SKP1"), network = SKCM_graph, weight = "weight")
+
+# only display unadjusted P < 0.05 significant pairs
+plotEgoNetwork(hubnode = c("SKP1"), network = SKCM_graph, weight = "pvalweight", subset = TRUE, thresh = -log10(0.05))
 
 SKCM_meanStrength = strength(SKCM_graph, weights = E(SKCM_graph)$weight)/degree(SKCM_graph)
 
