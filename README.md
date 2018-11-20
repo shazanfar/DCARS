@@ -160,6 +160,20 @@ g
 # this shows that the strongest genes are IMPDH1 and SKP2, these genes have the highest mean edge weights
 ```
 
+Further interrogation
+
+Examine the weighted correlation vector for given genepairs. e.g. we observe a positive association between SKP1 and SKP2, which deteriorates along the sample rankings.
+
+```r
+# calculate the weighted correlation vectors across the network
+SKCM_wcor = t(DCARSacrossNetwork(SKCM_rank,
+                               edgelist = STRING,
+                               W = W, 
+                               verbose = FALSE,
+                               extractWcorSequenceOnly = TRUE))
+plotWCorLine(SKCM_wcor, gene = "SKP1")
+```
+
 ## Author
 
 * **Shila Ghazanfar**  - [@shazanfar](https://twitter.com/shazanfar)

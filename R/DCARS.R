@@ -669,3 +669,82 @@ plotEgoNetwork = function(hubnode, network, weight = "weight", subset = FALSE, t
   }
   return(subego)
 }
+
+
+
+#' the plotWCorLine function
+#'
+#' @title plotWCorLine plots weighted correlation vectors as line plots
+#' @param wcorsList is a list of matrices, with each matrix gene pair x samples weighted correlation vectors, assumed that they have same number of rows
+#' @param gene is either a logical vector matching rows of entries in wcorsList, or a character of a gene
+#' @return \code{ggplot} object with line plots
+
+#' @examples
+#'
+#'
+#'
+#'
+#'
+#'
+#' @export
+#'
+plotWCorLine = function(wcorsList, gene) {
+
+  # wcorsList is a list of matrices, with each matrix gene pair x samples weighted correlation vectors, assumed that they have same number of rows
+  # gene is either a logical vector matching rows of entries in wcorsList, or a character of a gene
+  # matchExact matches gene names by splitting instead of using grep, but is slower
+
+  require(reshape)
+
+  if (class(wcorsList) != "list") {
+    wcorsList = list(Branch = wcorsList)
+  }
+
+  if (is.null(names(wcorsList))) {
+    names(wcorsList) <- paste0("Branch_",1:length(wcorsList))
+  }
+
+  if (is.logical(gene[1])) {
+
+    if (length(unique(unlist(lapply(wcorsList,nrow)))) > 1) {
+      stop("cannot use logical subset when weighted correlation matrices have differing rows")
+    }
+
+    if (length(gene) != nrow(wcorsList[[1]])) {
+      stop("cannot use logical subset when length of gene doesn't match nrow of wcorsList matrices")
+    }
+
+    wcors_longList = lapply(wcorsList,function(branch){
+      melt(t(branch[gene,]))
+    })
+
+    gene = ""
+  } else {
+
+    gene = paste0(sort(gene), collapse = "|")
+
+    wcors_longList = lapply(wcorsList,function(branch){
+      melt(t(branch[grepl(gene,rownames(branch)),]))
+    })
+
+  }
+
+  branch_long = do.call(rbind,wcors_longList)
+  branch_long = cbind(
+    rep(names(wcors_longList), unlist(lapply(wcors_longList,nrow))),
+    branch_long)
+  colnames(branch_long) = c("branch","SampleOrder", "GenePair","WeightedCorrelation")
+
+
+  g = ggplot(branch_long,
+             aes(x = SampleOrder, y = WeightedCorrelation, group = GenePair, col = GenePair)) +
+    geom_line(size = 2, alpha = 0.6) +
+    facet_grid(~branch, scales = "free_x") +
+    theme_minimal() +
+    ylim(c(-1,1)) +
+    geom_hline(yintercept = 0, size = 1, colour = "grey") +
+    ggtitle(gene) +
+    NULL
+
+  return(g)
+}
