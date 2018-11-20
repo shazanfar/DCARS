@@ -117,6 +117,10 @@ V(SKCM_signif_graph)$size = 0.01
 V(SKCM_signif_graph)$label.cex = 0.6
 plot(SKCM_signif_graph)
 
+# plot network with pathway information overlaid
+# pathway information downloaded from MSigDB REACTOME pathways
+plotNetworkPathway(SKCM_signif_graph)
+
 # extract network communities and plot
 cm = walktrap.community(SKCM_signif_graph)
 plot(cm, SKCM_signif_graph)

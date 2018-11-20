@@ -875,14 +875,13 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
 
   allhallmarks = unique(unlist(hallmarks))
 
-  if (is.null(geneUniverse)) {
-    geneUniverse = unique(unlist(lapply(sigPairsList, function(net) V(net)$name)))
-  }
-
   if (class(sigPairsList) != "list") {
     sigPairsList = list(Branch = sigPairsList)
   }
 
+  if (is.null(geneUniverse)) {
+    geneUniverse = unique(unlist(lapply(sigPairsList, function(net) V(net)$name)))
+  }
 
   lyList = lapply(sigPairsList, function(net) {
     ly = layout.auto(net)
@@ -928,7 +927,7 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
     })
     names(cm_mostrepresented) <- unique(cmmembershipList[[branch]])
     return(cm_mostrepresented)
-  })
+  }, simplify = FALSE)
 
   message("Plotting network graphs")
 
