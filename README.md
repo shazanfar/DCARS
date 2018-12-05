@@ -182,6 +182,18 @@ SKCM_wcor = t(DCARSacrossNetwork(SKCM_rank,
 plotWCorLine(SKCM_wcor, gene = "SKP1")
 ```
 
+Examine the significant weighted correlations in terms of clustered pathways
+
+```r
+SKCM_signif_wcor = t(DCARSacrossNetwork(SKCM_rank,
+                                        edgelist = SKCM_signif_edges,
+                                        W = W, 
+                                        verbose = FALSE,
+                                        extractWcorSequenceOnly = TRUE))
+
+plotWcorsClusterPathway(SKCM_signif_wcor,cluster = TRUE)
+```
+
 ## Author
 
 * **Shila Ghazanfar**  - [@shazanfar](https://twitter.com/shazanfar)

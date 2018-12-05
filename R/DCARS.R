@@ -950,3 +950,222 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
   }
 
 }
+
+
+#' the plotWcorsClusterPathway function
+#'
+#' @title plotWcorsClusterPathway plots network graphs with most represented pathways labelled
+#' @param sigWcorsList named list of weighted correlation matrices per branch, rows are gene pairs and columns are ordered samples, if it is not a list it will be converted into a list
+#' @param pathways is a named list containing gene sets for querying, if left NULL defaults to REACTOME c2.all.v6.1.symbols.gmt downloaded from MSigDB
+#' @param geneUniverse is the universe of genes measured, if null its taken as all the genes in the sigWcorsList
+#' @param cutk number of weighted correlation clusters to cut hclust
+#' @param topPathways is the top number of pathways to plot
+#' @param cluster is a logical if pathway and weighted correlation clustering should be performed
+#' @param label_wrap_cut number of letters to wrap for labelling heatmap
+#' @return \code{plot} plots of igraph objects
+#'
+#' @examples
+#'
+#'
+#'
+#'
+#' @export
+#'
+plotWcorsClusterPathway = function(sigWcorsList,pathways = hallmarks,geneUniverse = NULL,cutk = 15,topPathways = 2,cluster = FALSE,label_wrap_cut = 20) {
+
+  # sigWcorsList named list of weighted correlation matrices per branch, rows are gene pairs and columns are ordered samples
+  # pathways named list of pathways containing gene names
+  # geneUniverse genes in the universe for pathway analysis
+  # cutk number of weighted correlation clusters to cut hclust
+  # topPathways is the top number of pathways to plot
+  # cluster = FALSE
+  # label_wrap_cut number of letters to wrap
+
+  require(patchwork)
+  require(ggplot2)
+  require(reshape)
+
+  if (is.null(pathways)) {
+    data(hallmarks)
+  } else {
+    hallmarks = pathways
+  }
+
+  allhallmarks = unique(unlist(hallmarks))
+
+  if (class(sigWcorsList) != "list") {
+    sigWcorsList = list(Branch = sigWcorsList)
+  }
+
+  if (is.null(geneUniverse)) {
+    geneUniverse = toupper(unique(unlist(lapply(sigWcorsList, function(wcors) strsplit(rownames(wcors),"_")))))
+  }
+
+  # make list of significant wcors matrix
+
+  sig_wcors_hc = lapply(sigWcorsList,function(wcors) {
+    cutree(hclust(dist(wcors, method = "euclidean")),cutk)
+  })
+
+  message("Extracted weighted correlation clusters")
+
+  # extract genes from the cutk clusters
+  clusterGenes = lapply(sig_wcors_hc,function(wcors_hc) {
+    sapply(1:cutk, function(i){
+      pairs = names(wcors_hc[wcors_hc == i])
+      genes = sort(unique(unlist(strsplit(pairs,"_"))))
+      return(genes)
+    }, simplify = FALSE)
+  })
+
+  # perform pathway testing per cluster
+  # want a list of dataframes, with column for cluster, pathway, p-value, numbergenes
+  pathwayDF = sapply(names(sigWcorsList), function(branch) {
+    dfBranch = sapply(1:length(clusterGenes[[branch]]),function(i){
+
+      # print(i)
+      # perfrom pathway test for this set of genes
+      genes = clusterGenes[[branch]][[i]]
+
+      hallmarks_pval = unlist(lapply(hallmarks, function(hallmark){
+        if (!any(geneUniverse %in% hallmark)) return(1)
+        if (!any(geneUniverse %in% genes)) return(1)
+        fisher.test(table(geneUniverse %in% hallmark,geneUniverse %in% genes), alt = "g")$p.value
+      }))
+
+      df = data.frame(cluster = i,
+                      pathway = names(hallmarks_pval),
+                      pvalue = hallmarks_pval)
+      return(df)
+    }, simplify = FALSE)
+
+    return(do.call(rbind,dfBranch))
+
+  }, simplify = FALSE)
+
+  message("Performed pathway analysis for branches")
+
+  # calculate average wcor per cluster
+  wcorAverage = sapply(names(sigWcorsList),function(branch) {
+
+    t(sapply(unique(sig_wcors_hc[[branch]]), function(i){
+
+      colMeans(sigWcorsList[[branch]][sig_wcors_hc[[branch]] == i,, drop = FALSE])
+
+    }, simplify = TRUE))
+
+  }, simplify = FALSE)
+
+  message("Built pathway and average weighted correlation data frame")
+
+  pathwaysToDisplay = lapply(pathwayDF, function(pathwaydf) {
+    unique(unlist(sapply(unique(pathwaydf$cluster), function(i){
+      # print(i)
+      subdf = subset(pathwaydf, cluster == i)
+      subdfp = subdf[,"pvalue"]
+      names(subdfp) <- subdf[,"pathway"]
+      names(sort(subdfp)[1:topPathways])
+    }, simplify = FALSE)))
+  })
+
+  message("Extracted top pathways to display")
+
+
+  pathwayDFsub = sapply(names(sigWcorsList), function(branch) {
+    subset(pathwayDF[[branch]], pathway %in% pathwaysToDisplay[[branch]])
+  }, simplify = FALSE)
+
+  if (cluster) {
+
+    require(ComplexHeatmap)
+
+    hList = sapply(names(sigWcorsList), function(branch) {
+      mat = cast(pathwayDFsub[[branch]], cluster ~ pathway)[,-1]
+      h = Heatmap(-log10(mat),
+                  cluster_rows = TRUE,
+                  row_names_gp = gpar(fontsize = 8),
+                  col = c("white","red","red"),
+                  # name = "-log(P-value)",
+                  heatmap_legend_param = list(legend_direction = "horizontal"),
+                  rect_gp = gpar(col = "grey", lty = 1, lwd = 1),
+                  row_names_max_width = unit(200,"mm")
+      )
+      return(h)
+    })
+    message("Completed clustering of weighted correlation types")
+  }
+
+  message("Extracted pathway clusters")
+
+  pathway_gList = sapply(names(pathwayDFsub), function(branch) {
+
+    pdf = pathwayDFsub[[branch]]
+    # wrap the labels
+
+    if (cluster) {
+      pdf$cluster = factor(pdf$cluster, levels = row_order(hList[[branch]])[[1]])
+      pdf$pathway = factor(pdf$pathway, levels = unique(pdf$pathway)[column_order(hList[[branch]])])
+    }
+
+    pdf$newpathway = factor(stringr::str_wrap(gsub("_"," ",pdf$pathway), width = label_wrap_cut),
+                            levels = stringr::str_wrap(gsub("_"," ",levels(pdf$pathway)), width = label_wrap_cut))
+
+
+    g = ggplot(pdf,aes(x = cluster, y  = newpathway,
+                       fill = -log10(pvalue), size = -log10(pvalue),
+                       color = -log10(pvalue))) +
+      geom_point() +
+      theme_minimal() +
+      scale_fill_gradient(low = "grey",high = "red") +
+      scale_color_gradient(low = "grey",high = "red") +
+      xlab("") +
+      ylab("") +
+      NULL
+
+    return(g)
+  }, simplify = FALSE)
+
+  message("Built pathway graphs")
+
+  # weighted correlation graph
+  wcor_gList = sapply(names(wcorAverage), function(branch){
+
+    groupmeansdf = melt(wcorAverage[[branch]])
+    colnames(groupmeansdf) <- c("X1","X2","value")
+
+    if (cluster) {
+      groupmeansdf$X1 = factor(groupmeansdf$X1,levels = row_order(hList[[branch]])[[1]])
+      h_split = cutree(as.hclust(row_dend(hList[[branch]])[[1]]),min(6, cutk))
+      groupmeansdf$split = factor(h_split[as.character(groupmeansdf$X1)])
+    } else {
+      groupmeansdf$X1 = factor(groupmeansdf$X1)
+      groupmeansdf$split = groupmeansdf$X1
+    }
+
+
+    g = ggplot(groupmeansdf,
+               aes(x = X2, y = value, group = X1, col = split)) +
+      geom_line(size = 2, show.legend = FALSE) +
+      theme_minimal() +
+      geom_hline(yintercept = 0) +
+      xlab("Pseudotime") +
+      ylab("Local correlation") +
+      facet_grid(~X1) +
+      NULL
+
+    return(g)
+  }, simplify = FALSE)
+
+  message("Built average weighted correlation graphs")
+
+  patch_gList = sapply(names(pathwayDFsub),function(branch){
+    pathway_gList[[branch]] + ggtitle(branch) +
+      wcor_gList[[branch]] + theme(axis.text.x = element_blank()) +
+      plot_layout(ncol = 1, heights = c(2,1))
+  }, simplify = FALSE)
+
+  message("combined all graphs")
+
+  final_g = patchwork::wrap_plots(patch_gList, nrow = 1)
+  return(final_g)
+}
