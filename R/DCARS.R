@@ -833,6 +833,74 @@ boundsKendallStar = function(x,y,W) {
 
 ##############################################
 
+#' The sweightedKendallStar function is a convenience function to get swcor for weighted zero-inflated kendall's tau
+#'
+#' @title sweightedKendallStar
+#' @param x data vector
+#' @param y data vector
+#' @param w weights vector
+#' @return \code{vector} of stretched weighted correlations using zero-inflated kendall's tau association measure
+
+#' @examples
+#'
+#' x = pmax(0,rnorm(100))
+#' y = pmax(0,rnorm(100))
+#' w = runif(100)
+#' wcor = weightedKendallStar(x,y,w)
+#' bounds = boundsKendallStar(x,y,w)
+#' stretch(wcor, upper = bounds[["upper"]], lower = bounds[["lower"]]
+#'
+#' sweightedKendallStar(x,y,w)
+#'
+#' @export
+
+sweightedKendallStar = function(x,y,w) {
+  # convenience function to get swcor for weighted zero-inflated kendall's tau
+
+  wcor = weightedKendallStar(x,y,w)
+
+  bounds = boundsKendallStar(x,y,w)
+
+  swcor = stretch(wcor,upper = bounds[["upper"]], lower = bounds[["lower"]])
+
+  return(swcor)
+}
+
+##############################################
+
+#' The thin function extracts the rows of a matrix evenly so that roughly n number of rows remain. Used for thinning down the weight matrix to speed up overall computation.
+#'
+#' @title thin
+#' @param W matrix
+#' @param n rough number of rows to keep
+#' @return \code{matrix} of thinned matrix keeping only roughly n rows.
+
+#' @examples
+#'
+#' W = weightMatrix(500)
+#' W_small = thin(W, n = 100)
+#'
+#' @export
+
+thin = function(W, n = 100) {
+  # given a matrix W, extract the rows so that
+  # the total number of rows is roughly n
+
+  N = nrow(W)
+
+  if (n == N) return(W)
+
+  if (n > N) stop("need to set n to less than nrow(W)")
+
+  new_n = floor(N/n)
+
+  index = seq(from = 1, to = N, by = new_n)
+
+  return(W[index,])
+}
+
+##############################################
+
 #' the stratifiedSample function
 #'
 #' @title stratifiedSample
