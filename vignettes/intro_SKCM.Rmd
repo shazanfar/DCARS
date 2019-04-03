@@ -25,7 +25,7 @@ Installation
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning  = FALSE,message = FALSE)
 knitr::opts_chunk$set(cache = TRUE)
-knitr::opts_chunk$set(fig.height = 12, fig.width = 12)
+knitr::opts_chunk$set(fig.height = 7, fig.width = 7)
 ```
 
 ```{r, eval=FALSE}
