@@ -297,6 +297,8 @@ DCARSacrossNetwork = function(dat,edgelist,edgeNames = rownames(edgelist),...) {
   return(DCARSresult)
 }
 
+##############################################
+
 #' Performs Fisher's Z Transformation test for differential correlation.
 #'
 #' @title fisherZtransformTest
@@ -382,6 +384,7 @@ fisherZtransformTest = function(dat,xname,yname,classLabels=NULL) {
   return(2*(1-pnorm(dz)))
 }
 
+##############################################
 
 #' Fits a linear model with interaction term and tests for significance of the interaction term.
 #'
@@ -425,8 +428,11 @@ LinearModelInteractionTest = function(dat,xname,yname, response = NULL) {
 
 }
 
+##############################################
 
-#' calculates weighted correlation between x and y
+#' Calculates weighted Pearson correlation between x and y.
+#' This function has been superceded by weightedPearson() and
+#' similar matrix function weightedPearson_matrix()
 #'
 #' @title weightedcor
 #' @param x x and y are data vectors
@@ -446,7 +452,7 @@ LinearModelInteractionTest = function(dat,xname,yname, response = NULL) {
 
 weightedcor = function(x,y,w) {
 
-  # calculates weighted correlation between x and y
+  # calculates weighted Pearson correlation between x and y
   # x and y are data vectors
   # w is a weight vector
 
@@ -457,6 +463,8 @@ weightedcor = function(x,y,w) {
   wcor = wssxy/sqrt(wssx*wssy)
   return(wcor)
 }
+
+##############################################
 
 #' the stratifiedSample function
 #'
@@ -486,7 +494,7 @@ stratifiedSample = function(stats) {
   return(sampleindices)
 }
 
-
+##############################################
 
 #' the getLoessCriticalValue function
 #'
@@ -522,6 +530,7 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
   return(criticalValue)
 }
 
+##############################################
 
 #' the plotColouredExpression function
 #'
@@ -599,7 +608,7 @@ plotColouredExpression = function(branchData, genepair, subsetBranch = NULL) {
   return(g)
 }
 
-
+##############################################
 
 #' the plotEgoNetwork function
 #'
@@ -670,7 +679,7 @@ plotEgoNetwork = function(hubnode, network, weight = "weight", subset = FALSE, t
   return(subego)
 }
 
-
+##############################################
 
 #' the plotWCorLine function
 #'
@@ -749,7 +758,7 @@ plotWCorLine = function(wcorsList, gene) {
   return(g)
 }
 
-
+##############################################
 
 #' the plotOrderedExpression function
 #'
@@ -840,7 +849,7 @@ plotOrderedExpression = function(branchData, gene, xvals = NULL, subsetBranch = 
 }
 
 
-
+##############################################
 
 #' the plotNetworkPathway function
 #'
@@ -951,6 +960,7 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
 
 }
 
+##############################################
 
 #' the plotWcorsClusterPathway function
 #'

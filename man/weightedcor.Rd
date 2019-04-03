@@ -17,7 +17,9 @@ weightedcor(x, y, w)
 weighted correlation value between x and y
 }
 \description{
-calculates weighted correlation between x and y
+Calculates weighted Pearson correlation between x and y.
+This function has been superceded by weightedPearson() and
+similar matrix function weightedPearson_matrix()
 }
 \examples{
 
