@@ -1,5 +1,5 @@
 ---
-title: "Differential Correlation across Ranked Samples"
+title: "Differential Correlation across Ranked Samples - example with Skin Cutaneous Melanoma data"
 author: "Shila Ghazanfar"
 date: "`r Sys.Date()`"
 output:
