@@ -5,8 +5,10 @@
 \title{DCARS}
 \usage{
 DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
-  statmin = 0, extractTestStatisticOnly = FALSE,
-  extractWcorSequenceOnly = FALSE, plot = FALSE, niter = 100,
+  statmin = 0, weightedConcordanceFunction = weightedPearson,
+  weightedConcordanceFunctionW = "vector",
+  extractTestStatisticOnly = FALSE, extractWcorSequenceOnly = FALSE,
+  plot = FALSE, niter = 100,
   extractPermutationTestStatistics = FALSE, verbose = FALSE, ...)
 }
 \arguments{
@@ -24,6 +26,10 @@ DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
 
 \item{statmin}{minimum value DCARS test statistic to include for permutation testing}
 
+\item{weightedConcordanceFunction}{concordance function to use, defaults to weighted Pearson correlation. User can provide their own function, with arguments fun(x,y,w).}
+
+\item{weightedConcordanceFunctionW}{either "vector" or "matrix", determining if the function given in weightedConcordanceFunction argument takes in a single vector as input for w, or a matrix.}
+
 \item{extractTestStatisticOnly}{if TRUE, extract only the DCARS test statistic without permutation testing}
 
 \item{plot}{if TRUE plot observed weighted correlatin vector}
@@ -39,10 +45,10 @@ DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
 \item{extractWcorSequence}{if TRUE, extract only the weighted correlation vector without permutation testing}
 }
 \value{
-either single value (p-value or test statistic), vector (local weighted correlation), or list (combination of above) depending on the input parameters
+either single value (p-value or test statistic), vector (local weighted correlation), or list (combination of above) depending on the input parameters.
 }
 \description{
-the DCARS function
+The DCARS function performs testing for differential correlation across ranked samples.
 }
 \examples{
 

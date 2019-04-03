@@ -94,7 +94,7 @@ weightMatrix = function(n,
 
 ##############################################
 
-#' the DCARS function
+#' The DCARS function performs testing for differential correlation across ranked samples.
 #'
 #' @title DCARS
 #' @param dat a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival
@@ -104,6 +104,8 @@ weightMatrix = function(n,
 #' @param rangeMin minimum range of weighted correlation vector to include for permutation testing
 #' @param wcormin minimum absolute value weighted correlation vector to include for permutation testing
 #' @param statmin minimum value DCARS test statistic to include for permutation testing
+#' @param weightedConcordanceFunction concordance function to use, defaults to weighted Pearson correlation. User can provide their own function, with arguments fun(x,y,w).
+#' @param weightedConcordanceFunctionW either "vector" or "matrix", determining if the function given in weightedConcordanceFunction argument takes in a single vector as input for w, or a matrix.
 #' @param plot if TRUE plot observed weighted correlatin vector
 #' @param niter number of iterations for permutation testing
 #' @param extractTestStatisticOnly if TRUE, extract only the DCARS test statistic without permutation testing
@@ -112,7 +114,7 @@ weightMatrix = function(n,
 #' @param verbose if TRUE, print updates
 #' @param ... additional arguments passing on to weightMatrix()
 
-#' @return either single value (p-value or test statistic), vector (local weighted correlation), or list (combination of above) depending on the input parameters
+#' @return either single value (p-value or test statistic), vector (local weighted correlation), or list (combination of above) depending on the input parameters.
 
 #' @examples
 #'
@@ -143,90 +145,90 @@ weightMatrix = function(n,
 #'
 #' @export
 
+DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
+                 statmin = 0,
+                 weightedConcordanceFunction = weightedPearson,
+                 weightedConcordanceFunctionW = "vector",
+                 extractTestStatisticOnly = FALSE, extractWcorSequenceOnly = FALSE,
+                 plot = FALSE, niter = 100, extractPermutationTestStatistics = FALSE,
+                 verbose = FALSE, ...)
+{
+  weightedcor = weightedConcordanceFunction
 
-DCARS = function(dat,xname,yname,W=NULL,rangeMin = 0,wcormin = 0,statmin = 0,extractTestStatisticOnly = FALSE,extractWcorSequenceOnly = FALSE,plot = FALSE,niter = 100,extractPermutationTestStatistics = FALSE,verbose = FALSE,...) {
-
-  # dat: is a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival
-  # xname: name of row of dat to test together with yname
-  # yname: name of row of dat to test together with xname
-  # W: weight matrix for weighted correlations,
-  # rangeMin: minimum range of weighted correlation vector to include for permutation testing
-  # wcormin: minimum absolute value weighted correlation vector to include for permutation testing
-  # statmin: minimum value DCARS test statistic to include for permutation testing
-  # plot: if TRUE plot observed weighted correlatin vector
-  # niter: number of iterations for permutation testing
-  # extractTestStatisticOnly: if TRUE, extract only the DCARS test statistic without permutation testing
-  # extractWcorSequence: if TRUE, extract only the weighted correlation vector without permutation testing
-  # extractPermutationTestStatistics if TRUE extracts the set of permuted DCARS statistics
-  # verbose: if TRUE, print updates
-  # ...: additional arguments passing on to weightMatrix()
-
-  if (any(!c(xname,yname) %in% rownames(dat))) {
+  if (any(!c(xname, yname) %in% rownames(dat))) {
     message("xname and/or yname are not found in rownames(dat), returning NA")
     return(NA)
   }
-
   if (verbose) {
-    print(paste(xname,yname))
+    print(paste(xname, yname))
   }
-
   if (is.null(W)) {
     message("weight matrix not specified, generating weight matrix now")
-    W = weightMatrix(ncol(dat),...)
+    W = weightMatrix(ncol(dat), ...)
+  }
+  if (!weightedConcordanceFunctionW %in% c("vector","matrix")) {
+    stop("Please specify either \"vector\" or \"matrix\" for the weightedConcordanceFunction")
+  }
+  x = dat[xname, ]
+  y = dat[yname, ]
+
+  if (weightedConcordanceFunctionW == "vector") {
+    wcor = sapply(1:nrow(W), function(i) weightedcor(x, y, W[i, ]))
+  } else {
+    wcor = weightedcor(x, y, W)
   }
 
-  x = dat[xname,]
-  y = dat[yname,]
-
-  # weighted correlation vector
-  wcor = sapply(1:length(x),function(i)weightedcor(x,y,W[i,]))
   if (any(!is.finite(wcor))) {
     i = which(!is.finite(wcor))
-    wcor[i] <- mean(c(wcor[c(i-1,i+1)]))
+    wcor[i] <- mean(c(wcor[c(i - 1, i + 1)]))
   }
-
   if (plot) {
-    plot(wcor,type="l",ylim=c(-1,1),lwd=3, col = "blue");abline(h=0,lty=2)
+    plot(wcor, type = "l", ylim = c(-1, 1), lwd = 3, col = "blue")
+    abline(h = 0, lty = 2)
   }
-
   stat = sd(wcor)
-
-  if (extractWcorSequenceOnly&extractTestStatisticOnly) {
+  if (extractWcorSequenceOnly & extractTestStatisticOnly) {
     message("both extractWcorSequenceOnly and extractTestStatisticOnly have been specified as TRUE, returning both as a list")
-    return(list(wcorSequence = wcor,
-                TestStatistic = stat))
+    return(list(wcorSequence = wcor, TestStatistic = stat))
   }
-  if (extractWcorSequenceOnly) return(wcor)
-  if (extractTestStatisticOnly) return(stat)
-  if (stat < statmin) return(NA)
-  if (diff(range(wcor)) < rangeMin) return(NA)
-  if (max(abs(wcor)) < wcormin) return(NA)
-
-  # perform permutation test
+  if (extractWcorSequenceOnly)
+    return(wcor)
+  if (extractTestStatisticOnly)
+    return(stat)
+  if (stat < statmin)
+    return(NA)
+  if (diff(range(wcor)) < rangeMin)
+    return(NA)
+  if (max(abs(wcor)) < wcormin)
+    return(NA)
   if (verbose) {
     message("performing permutation test")
   }
-  sds = replicate(niter,{
+  sds = replicate(niter, {
     o = sample(1:length(x))
     xo = x[o]
     yo = y[o]
-    wcor = sapply(1:length(x),function(i)weightedcor(xo,yo,W[i,]))
+
+    if (weightedConcordanceFunctionW == "vector") {
+      wcor = sapply(1:nrow(W), function(i) weightedcor(xo, yo, W[i, ]))
+    } else {
+      wcor = weightedcor(xo, yo, W)
+    }
+
     if (any(!is.finite(wcor))) {
       i = which(!is.finite(wcor))
-      wcor[i] <- mean(c(wcor[c(i-1,i+1)]))
+      wcor[i] <- mean(c(wcor[c(i - 1, i + 1)]))
     }
+    print("done one permutation")
     sd(wcor)
   })
-
   if (extractPermutationTestStatistics) {
     if (verbose) {
       print("extract permuted test statistics")
     }
-    # return(list(PermutedTestStatistics=sds))
     return(list(PermutedTestStatistics = sds))
   }
-
-  return(mean(sds>=stat))
+  return(mean(sds >= stat))
 }
 
 ##############################################
