@@ -5,6 +5,10 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     keep_md: true
+vignette: >
+  %\VignetteIndexEntry{Differential Correlation across Ranked Samples - example with Skin Cutaneous Melanoma data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 Differential Correlation across Ranked Samples
@@ -46,7 +50,8 @@ SKCM_rank = t(apply(SKCM,1,rank))
 
 # highly significantly DCARS gene pair: SKP1 and SKP2
 # calculates p-value based on permutation
-DCARS(SKCM_rank,"SKP1","SKP2",plot=TRUE)
+DCARS(SKCM_rank,"SKP1","SKP2", plot=TRUE)
+
 # extract only the test statistic
 DCARS(SKCM_rank,"SKP1","SKP2", extractTestStatisticOnly = TRUE)
 # examine the weighted correlation vector
@@ -55,8 +60,10 @@ plot(wcor, type = "l", ylim = c(-1,1)); abline(h = 0, lty = 2)
 
 # plot scatterplot split into five groups by survival ranking
 plotColouredExpression(SKCM, genepair = c("SKP1","SKP2"), n = 5)
+
 # plot ribbon plot of genes along sample ranking
 plotOrderedExpression(SKCM, gene = c("SKP1", "SKP2"), facet = FALSE)
+
 
 # not significantly DCARS gene pair: EIF3C and EIF5B
 # calculates p-value based on permutation
@@ -68,7 +75,7 @@ wcor = DCARS(SKCM_rank,"EIF3C", "EIF5B",extractWcorSequenceOnly = TRUE)
 plot(wcor, type = "l", ylim = c(-1,1)); abline(h = 0, lty = 2)
 
 # build weight matrix
-W = weightMatrix(ncol(SKCM_rank), type = "triangular", span = 0.5, plot = TRUE)
+W = weightMatrix(ncol(SKCM_rank), type = "triangular", span = 0.5, plot = FALSE)
 
 # extract DCARS test statistics
 # should take about 30 seconds

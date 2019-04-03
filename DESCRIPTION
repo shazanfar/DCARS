@@ -10,4 +10,6 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     gplots
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
 RoxygenNote: 6.1.1
