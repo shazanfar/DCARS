@@ -35,9 +35,12 @@ SKCM_rank = t(apply(SKCM,1,rank))
 DCARS(SKCM_rank,"SKP1","SKP2",plot=TRUE)
 # extract only the test statistic
 DCARS(SKCM_rank,"SKP1","SKP2", extractTestStatisticOnly = TRUE)
+# examine the weighted correlation vector
+wcor = DCARS(SKCM_rank,"SKP1","SKP2", extractWcorSequenceOnly = TRUE)
+plot(wcor, type = "l", ylim = c(-1,1)); abline(h = 0, lty = 2)
 
-# plot scatterplot split by early, mid, late in the sample ranking
-plotColouredExpression(SKCM, genepair = c("SKP1","SKP2"))
+# plot scatterplot split into five groups by survival ranking
+plotColouredExpression(SKCM, genepair = c("SKP1","SKP2"), n = 5)
 # plot ribbon plot of genes along sample ranking
 plotOrderedExpression(SKCM, gene = c("SKP1", "SKP2"), facet = FALSE)
 
@@ -46,6 +49,9 @@ plotOrderedExpression(SKCM, gene = c("SKP1", "SKP2"), facet = FALSE)
 DCARS(SKCM_rank,"EIF3C","EIF5B",plot=TRUE)
 # extract only the test statistic
 DCARS(SKCM_rank,"EIF3C","EIF5B", extractTestStatisticOnly = TRUE)
+# examine the weighted correlation vector
+wcor = DCARS(SKCM_rank,"EIF3C", "EIF5B",extractWcorSequenceOnly = TRUE)
+plot(wcor, type = "l", ylim = c(-1,1)); abline(h = 0, lty = 2)
 
 # build weight matrix
 W = weightMatrix(ncol(SKCM_rank), type = "triangular", span = 0.5, plot = TRUE)
@@ -61,45 +67,41 @@ sort(SKCM_stats,decreasing=TRUE)[1:10]
 To calculate p-values associated with these tests quickly, we use permutation tests over a stratified sample of gene pairs
 
 ```r
-# first take a stratified sample of gene pairs
-sampleindices = stratifiedSample(SKCM_stats)
+globalCors = apply(STRING, 1, function(x) cor(SKCM_rank[x[1],], SKCM_rank[x[2],]))
 
-# What niter is needed for Bonferroni-corrected p-value of 0.05?
-# Need to ensure that our choice of iterations is above this 'niter' value
-# i do this by selecting 110% of niter
-signif = 0.05
-bonfSig = signif/length(SKCM_stats)
-niter = (length(SKCM_stats)*(1/signif)) / length(sampleindices)
-niter
+# first take a stratified sample of gene pairs
+sampleindices = stratifiedSample(abs(globalCors), length = 50)
+
+# set number of permutations, roughly 1000 or so
+niter = 1000
 
 # calculate a large number of permutation statistics from these stratified sample pairs
-# this should take about 2 minutes
+# this should take about 3-4 minutes
 permstats = DCARSacrossNetwork(SKCM_rank,
                                edgelist = STRING[sampleindices,],
                                W = W, 
                                niter = round(1.1*niter),
+                               weightedConcordanceFunction = weightedPearson_matrix,
+                               weightedConcordanceFunctionW = "matrix",
                                verbose = TRUE,
                                extractPermutationTestStatistics = TRUE)
-                               
-permstatsVector = unlist(permstats)
-permpvals = sapply(SKCM_stats, function(x) mean(permstatsVector >= x))
-permpvals[permpvals==0] <- min(permpvals[permpvals!=0])/2
 
+res = estimatePvaluesSpearman(stats = SKCM_stats, 
+globalCors = globalCors, permstats = permstats, 
+usenperm = TRUE, nperm = 5000, plot = TRUE, verbose = FALSE)
+                               
 # plot DCARS statistic against estimated (unadjusted) p-value
 # note if there are not enough iterations then the top-most may flatten out
-plot(SKCM_stats, -log10(permpvals), col = "red", pch = 16)
-
-# add bonferroni adjusted line
-abline(h = -log10(bonfSig), lty = 2, col = "red")
+plot(SKCM_stats, -log10(res$pval), col = "red", pch = 16)
 
 # highlight FDR adjusted points
-permpvals_FDR = p.adjust(permpvals, method = "BH")
-FDR_sig = permpvals_FDR < 0.05
-sum(permpvals_FDR < 0.05)
+pval_FDR = p.adjust(res$pval, method = "BH")
+FDR_sig = pval_FDR < 0.3
+sum(pval_FDR < 0.3)
 
-points(SKCM_stats[FDR_sig], -log10(permpvals)[FDR_sig], col = "blue", pch = 16, cex = 1.2)
+points(SKCM_stats[FDR_sig], -log10(res$pval)[FDR_sig], col = "blue", pch = 16, cex = 1.2)
 
-# What are the most significant (FDR < 0.05) edges?
+# What are the most significant (FDR < 0.3) edges?
 SKCM_signif_edges_FDR = STRING[FDR_sig,]
 SKCM_signif_edges_FDR
 ```
@@ -108,7 +110,7 @@ Thresholding on unadjusted DCARS p-values (P-value < 0.05) to explore an unweigh
 
 ```r
 # extract these significant edges
-SKCM_signif_edges = STRING[permpvals < 0.05,]
+SKCM_signif_edges = STRING[res$pval < 0.05,]
 
 # and graph them as a network
 library(igraph)
@@ -191,7 +193,7 @@ SKCM_signif_wcor = t(DCARSacrossNetwork(SKCM_rank,
                                         verbose = FALSE,
                                         extractWcorSequenceOnly = TRUE))
 
-plotWcorsClusterPathway(SKCM_signif_wcor,cluster = TRUE)
+plotWcorsClusterPathway(SKCM_signif_wcor,cluster = TRUE, cutk = 6)
 ```
 
 ## Author

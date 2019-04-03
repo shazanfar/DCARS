@@ -219,7 +219,6 @@ DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
       i = which(!is.finite(wcor))
       wcor[i] <- mean(c(wcor[c(i - 1, i + 1)]))
     }
-    print("done one permutation")
     sd(wcor)
   })
   if (extractPermutationTestStatistics) {
@@ -1179,12 +1178,14 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
 
 ##############################################
 
-#' the plotColouredExpression function plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
+#' the plotColouredExpression function plots an n-panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
 #'
 #' @title plotColouredExpression
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
 #' @param genepair is either a single character string with an underscore, or a two length character vector
 #' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
+#' @param n number of panels to split ranked samples into, default 3.
+#' @param fittedline logical default TRUE, add a lm straight line to the plot
 #' @return \code{ggplot} a ggplot object of scatterplots of expression split by sample ordering
 
 #' @examples
