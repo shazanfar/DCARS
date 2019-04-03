@@ -350,6 +350,47 @@ pospos = function(x,y, offset = TRUE) {
 
 logistic = function(p) log((1-p)/(p))
 
+##############################################
+
+#' The prop_nonzero_matrix function calculates the proportion of observations with nonzero values in both variables across a number of pairs of variables, gived in PPI
+#'
+#' @title prop_nonzero_matrix
+#' @param dat matrix with rownames appearing in PPI
+#' @param PPI two column matrix with entries that should appear in rownames of dat
+#' @param offset should 1 be added when pospos is 0 or all
+#' @return \code{numeric} of weighted correlations for the sequence of weights given
+
+#' @examples
+#'
+#'
+#'
+#'
+#'
+#' @export
+
+prop_nonzero_matrix = function(dat, PPI, offset = TRUE) {
+
+  n = ncol(dat)
+  print(n)
+
+  xmat = dat[PPI[,1],]
+  ymat = dat[PPI[,2],]
+
+  xymat = xmat*ymat
+
+  posprop = Matrix::rowMeans(1*(xymat > 0))
+
+  if (offset) {
+
+    posprop[posprop == 0] <- 1/n
+    posprop[posprop == 1] <- (n-1)/n
+
+  }
+
+  names(posprop) <- rownames(PPI)
+
+  return(posprop)
+}
 
 ##############################################
 
