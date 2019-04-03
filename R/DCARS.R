@@ -673,6 +673,72 @@ weightedKendallStar = function(x, y, w) {
 
 ##############################################
 
+#' the weightedVariance function
+#'
+#' @title weightedVariance
+#' @param x x is a data vector
+#' @param y default to NULL, if given it is ignored
+#' @param w weight vector, values should be between 0 and 1
+#' @return \code{numeric} weighted variance value for x
+
+#' @examples
+#'
+#' x = rnorm(100)
+#' w = runif(100)
+#' weightedVariance(x,w)
+#'
+#' @export
+
+weightedVariance = function(x, y = NULL, w) {
+  # args x,w (if y given, it is ignored)
+
+  nw = sum(w)
+  wssx = nw * sum(w * (x^2)) - sum(w * x)^2
+  return(wssx)
+
+}
+
+##############################################
+
+#' The weightedVariance_matrix function calculates a vector of weighted variances for a given data vector, for a matrix of given weights.
+#'
+#' @title weightedVariance_matrix
+#' @param x x is a data vector
+#' @param y default to NULL, if given, it is ignored
+#' @param W weight matrix, values should be between 0 and 1, number of columns should be the same as length(x) and length(y)
+#' @return \code{vector} weighted variances of x for the weights
+
+#' @examples
+#'
+#' x = rnorm(100)
+#' W = weightMatrix(100)
+#' weightedVariance_matrix(x,y,w)
+#'
+#' @export
+
+weightedVariance_matrix = function(x, y = NULL, W) {
+  # args x,w (if y given, it is ignored)
+
+  x2 = x^2
+
+  wssxVec = rep(0,nrow(W))
+
+  for (i in 1:nrow(W)) {
+
+    w = W[i,]
+
+    nw = sum(w)
+    wssx = nw * sum(w * (x2)) - sum(w * x)^2
+    wssxVec[i] <- wssx
+
+  }
+
+  return(wssxVec)
+
+}
+
+##############################################
+
 #' the stratifiedSample function
 #'
 #' @title stratifiedSample
