@@ -9,7 +9,7 @@ plotColouredExpression(branchData, genepair, subsetBranch = NULL)
 \arguments{
 \item{branchData}{is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.}
 
-\item{genepair}{is either a single character string with an underscore, or a two length characer vector}
+\item{genepair}{is either a single character string with an underscore, or a two length character vector}
 
 \item{subsetBranch}{subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches}
 }

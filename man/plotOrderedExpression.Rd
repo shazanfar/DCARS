@@ -10,7 +10,7 @@ plotOrderedExpression(branchData, gene, xvals = NULL,
 \arguments{
 \item{branchData}{is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.}
 
-\item{gene}{is either a single character string with an underscore, or a two length characer vector}
+\item{gene}{is either a single character string with an underscore, or a two length character vector}
 
 \item{xvals}{is a list containing the x-values associated with the samples in branchData (if NULL, samples will just be plotted against their rank)}
 

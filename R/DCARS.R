@@ -527,7 +527,7 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
 #'
 #' @title plotColouredExpression plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
-#' @param genepair is either a single character string with an underscore, or a two length characer vector
+#' @param genepair is either a single character string with an underscore, or a two length character vector
 #' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
 #' @return \code{ggplot} a ggplot object of scatterplots of expression split by sample ordering
 
@@ -547,7 +547,7 @@ plotColouredExpression = function(branchData, genepair, subsetBranch = NULL) {
   # branchData is a list containing matrices of the cell expression per branch
   # assumed that the columns of each matrix in branchData is ordered by pseudotime
   # if branchData is not given as a list, it will be converted into a list containing branchData
-  # genepair is either a single character string with an underscore, or a two length characer vector
+  # genepair is either a single character string with an underscore, or a two length character vector
   # subsetBranch is a character vector containing the names of the branches to be plotted
   # if NULL it will plot all branches
 
@@ -755,7 +755,7 @@ plotWCorLine = function(wcorsList, gene) {
 #'
 #' @title plotOrderedExpression plots expression vectors along branches and genes as ribbon plots
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
-#' @param gene is either a single character string with an underscore, or a two length characer vector
+#' @param gene is either a single character string with an underscore, or a two length character vector
 #' @param xvals is a list containing the x-values associated with the samples in branchData (if NULL, samples will just be plotted against their rank)
 #' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
 #' @param facet can either be FALSE, "branch", "gene", or "both"
@@ -773,7 +773,7 @@ plotOrderedExpression = function(branchData, gene, xvals = NULL, subsetBranch = 
   # branchData is a list containing matrices of the cell expression per branch
   # assumed that the columns of each matrix in branchData is ordered by pseudotime
   # if branchData is not given as a list, it will be converted into a list containing branchData
-  # gene is either a single character string with an underscore, or a two length characer vector
+  # gene is either a single character string with an underscore, or a two length character vector
   # xvals is a list containing the x-values associated with the samples in branchData (if NULL, samples will just be plotted against their rank)
   # subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
   # facet can either be FALSE, "branch", "gene", or "both"
