@@ -901,6 +901,123 @@ thin = function(W, n = 100) {
 
 ##############################################
 
+#' The weightedStretchedKendallStar_matrix function calculates the stretched weighted Tau*, where where Tau* is described in Pimentel et al (2015) doi: 10.1016/j.spl.2014.09.002, and upper and lower bounds given in Denuit et al (2017) doi: 10.1016/j.spl.2017.03.005
+#'
+#' @title weightedStretchedKendallStar_matrix
+#' @param x numeric vector of non-negative data x
+#' @param y numeric vector of non-negative data y
+#' @param W weight matrix, same columns as length x and y
+#' @param stretch logical default TRUE, whether to stretch based on calculated upper and lower bounds
+#' @return \code{vector} of weighted correlations for the sequence of weights given
+
+#' @examples
+#'
+#' x = pmax(0,rnorm(100))
+#' y = pmax(0,rnorm(100))
+#' W = weightMatrix(100)
+#' wcor = weightedStretchedKendallStar_matrix(x, y, W)
+#'
+#' @export
+
+weightedStretchedKendallStar_matrix = function(x, y, W, stretch = TRUE) {
+
+  # function to calculate (stretched) weighted Tau*, where Tau* is described in
+  # Pimentel et al (2015)
+  # this association measure is defined on zero-inflated, non-negative random variables.
+  # W is a weight matrix with columns equal to the number of samples
+
+  if (any(x < 0 | y < 0)) stop("x and/or y values have negative values")
+
+  posx = x > 0
+  posy = y > 0
+
+  pospos = posx & posy
+
+  # look into calculating weighted tau from the positive values
+  # tau_11 = cor(x[pospos], y[pospos], method = "kendall")
+
+  x_diff = outer(x[pospos],x[pospos], FUN = "-")
+  y_diff = outer(y[pospos],y[pospos], FUN = "-")
+  xy_diff_upper_tri_x_diff = x_diff*y_diff*upper.tri(x_diff)
+
+  x_10 = x[!posy]
+  x_11 = x[posy]
+
+  y_10 = y[!posx]
+  y_11 = y[posx]
+
+  # weight specific quantities
+  tauStarVec = rep(0,nrow(W))
+  for (i in 1:nrow(W)) {
+
+    w = W[i,]
+
+    w_diff = outer(w[pospos],w[pospos])
+    w_diff[lower.tri(w_diff, diag = TRUE)] <- 0
+
+    sum_w = sum(w)
+
+    sum_w_diff = sum(w_diff)
+    if (sum_w_diff != 0) {
+      p_conc = sum((xy_diff_upper_tri_x_diff > 0)*w_diff)/sum_w_diff
+      p_disc = sum((xy_diff_upper_tri_x_diff < 0)*w_diff)/sum_w_diff
+
+      tau_11 = p_conc - p_disc
+    } else {
+      tau_11 = 0
+    }
+
+    p_11 = sum(w*pospos)/sum_w
+
+    p_00 = sum(w*(!posx & !posy))/sum_w
+
+    p_01 = sum(w*(!posx & posy))/sum_w
+
+    p_10 = sum(w*(posx & !posy))/sum_w
+
+    # define p_1 and p_2
+    # p_1 (weighted) proportion of times the x-values with y = 0 is greater than
+    # the x-values with y > 0
+    w_x_10 = w[!posy]
+    w_x_11 = w[posy]
+
+    w_x_outer = outer(w_x_10, w_x_11)
+
+    if (sum(w_x_outer) == 0) {
+      p_1 <- 0
+    } else {
+      p_1 = sum(outer(x_10, x_11, FUN = ">")*w_x_outer) / sum(w_x_outer)
+    }
+
+    # analogous for y
+    w_y_10 = w[!posx]
+    w_y_11 = w[posx]
+
+    w_y_outer = outer(w_y_10, w_y_11)
+
+    if (sum(w_y_outer) == 0) {
+      p_2 <- 0
+    } else {
+      p_2 = sum(outer(y_10, y_11, FUN = ">")*w_y_outer) / sum(w_y_outer)
+    }
+
+    tauStar = (p_11^2)*tau_11 +
+      2*(p_00*p_11 - p_01*p_10) +
+      2*p_11*(p_10*(1-2*p_1) + p_01*(1-2*p_2))
+
+    tauStarVec[i] <- tauStar
+  }
+
+  if (stretch) {
+    bounds = boundsKendallStar(x,y,W)
+    tauStarVec = stretch(tauStarVec,upper = bounds[["upper"]], lower = bounds[["lower"]])
+  }
+
+  return(tauStarVec)
+}
+
+##############################################
+
 #' the stratifiedSample function
 #'
 #' @title stratifiedSample
