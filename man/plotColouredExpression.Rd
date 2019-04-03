@@ -2,9 +2,10 @@
 % Please edit documentation in R/DCARS.R
 \name{plotColouredExpression}
 \alias{plotColouredExpression}
-\title{plotColouredExpression plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.}
+\title{plotColouredExpression}
 \usage{
-plotColouredExpression(branchData, genepair, subsetBranch = NULL)
+plotColouredExpression(branchData, genepair, subsetBranch = NULL,
+  n = 3, fittedline = TRUE)
 }
 \arguments{
 \item{branchData}{is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.}
@@ -17,7 +18,7 @@ plotColouredExpression(branchData, genepair, subsetBranch = NULL)
 \code{ggplot} a ggplot object of scatterplots of expression split by sample ordering
 }
 \description{
-the plotColouredExpression function
+the plotColouredExpression function plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
 }
 \examples{
 

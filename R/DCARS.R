@@ -1018,10 +1018,11 @@ weightedStretchedKendallStar_matrix = function(x, y, W, stretch = TRUE) {
 
 ##############################################
 
-#' the stratifiedSample function
+#' the stratifiedSample function takes in a vector of statistics, and returns a vector of indices for the statistics that should be used for permutation testing
 #'
 #' @title stratifiedSample
 #' @param stats a vector of statistics
+#' @param length rough number of indices to extract
 #' @return \code{vector} a vector of indices for the statistics that should be used for permutation testing
 
 #' @examples
@@ -1032,17 +1033,16 @@ weightedStretchedKendallStar_matrix = function(x, y, W, stretch = TRUE) {
 #'
 #' @export
 #'
-stratifiedSample = function(stats) {
-  # takes in a vector of statistics, and returns a vector of indices for the statistics that should be used for permutation testing
-  ranges = range(stats)
-  fac = cut(stats,seq(from = 0, to = ranges[2], length.out = 101))
+stratifiedSample = function(stats, length = 100) {
   nsamps = 3
-  sampleindices = unlist(tapply(1:length(stats),fac,function(x){
-    if (length(x)<nsamps) return(x)
-    sample(x,nsamps,replace = FALSE)
+  ranges = range(stats[is.finite(stats)])
+  fac = cut(stats, seq(from = ranges[1] - 1e-4, to = ranges[2], length.out = ceiling(length/nsamps)))
+  sampleindices = unlist(tapply(1:length(stats), fac, function(x) {
+    if (length(x) < nsamps)
+      return(x)
+    sample(x, nsamps, replace = FALSE)
   }))
   sampleindices = unique(sampleindices[!is.na(sampleindices)])
-  # length(sampleindices)
   return(sampleindices)
 }
 
@@ -1084,9 +1084,9 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
 
 ##############################################
 
-#' the plotColouredExpression function
+#' the plotColouredExpression function plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
 #'
-#' @title plotColouredExpression plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
+#' @title plotColouredExpression
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
 #' @param genepair is either a single character string with an underscore, or a two length character vector
 #' @param subsetBranch subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches
@@ -1101,62 +1101,55 @@ getLoessCriticalValue = function(stats, pvals, signifValue = 0.05, plot = FALSE)
 #'
 #' @export
 #'
-plotColouredExpression = function(branchData, genepair, subsetBranch = NULL) {
-
+plotColouredExpression = function(branchData, genepair, subsetBranch = NULL, n = 3, fittedline = TRUE) {
   require(ggplot2)
-
-  # branchData is a list containing matrices of the cell expression per branch
-  # assumed that the columns of each matrix in branchData is ordered by pseudotime
-  # if branchData is not given as a list, it will be converted into a list containing branchData
-  # genepair is either a single character string with an underscore, or a two length character vector
-  # subsetBranch is a character vector containing the names of the branches to be plotted
-  # if NULL it will plot all branches
-
   if (length(genepair) == 1) {
     genepair = unlist(strsplit(genepair, "_"))
-  } else {
+  }
+  else {
     genepair = genepair[1:2]
   }
-
   if (!is.list(branchData)) {
     branchData = list(Branch = branchData)
   }
-
   if (is.null(names(branchData))) {
-    names(branchData) <- paste0("Branch_",1:length(branchData))
+    names(branchData) <- paste0("Branch_", 1:length(branchData))
   }
-
-  gdf = do.call(rbind,lapply(branchData, function(branch){
-    gdf_list_1 = data.frame(
-      Sample = colnames(branch),
-      order = 1:ncol(branch),
-      ExpressionGene1 = branch[genepair[1],],
-      ExpressionGene2 = branch[genepair[2],]
-    )
-    gdf_list_1$ordercut = cut(gdf_list_1$order, 3, labels = c("Early","Middle","Late"))
+  gdf = do.call(rbind, lapply(branchData, function(branch) {
+    gdf_list_1 = data.frame(Sample = colnames(branch), order = 1:ncol(branch),
+                            ExpressionGene1 = branch[genepair[1], ], ExpressionGene2 = branch[genepair[2],
+                                                                                              ])
+    if (n > 1) {
+      gdf_list_1$ordercut = cut(gdf_list_1$order, n, labels = unlist(ifelse(n == 3, list(c("Early",
+                                                                                           "Middle", "Late")), list(paste0("Group ", 1:n)))))
+    } else {
+      gdf_list_1$ordercut = rep("All cells", times = nrow(gdf_list_1))
+    }
     return(gdf_list_1)
   }))
-
-  gdf$branch = rep(names(branchData), times = unlist(lapply(branchData, ncol)))
-
+  gdf$branch = rep(names(branchData), times = unlist(lapply(branchData,
+                                                            ncol)))
   if (!is.null(subsetBranch)) {
     gdf_sub = subset(gdf, branch %in% subsetBranch)
-    if (nrow(gdf_sub) == 0) stop("no branches with names in subsetBranch, please re-run with correct names (should match names of branchData)")
-  } else {
+    if (nrow(gdf_sub) == 0)
+      stop("no branches with names in subsetBranch, please re-run with correct names (should match names of branchData)")
+  }
+  else {
     gdf_sub = gdf
   }
-
-  g = ggplot(gdf_sub,aes(x = ExpressionGene1, y = ExpressionGene2, color = order)) +
-    geom_point(show.legend = FALSE) +
-    facet_grid(branch~ordercut, scales = "free_y") +
-    scale_color_gradientn(colours = c("orange","blue")) +
-    xlab(genepair[1]) +
-    ylab(genepair[2]) +
-    theme_minimal() +
-    geom_smooth(colour = "black", fill = NA, linetype = "dashed",
-                method = "lm") +
+  g = ggplot(gdf_sub, aes(x = ExpressionGene1, y = ExpressionGene2,
+                          color = order)) +
+    geom_point(show.legend = FALSE, alpha = 0.7) +
+    facet_grid(branch ~ ordercut, scales = "free_y") +
+    scale_color_gradientn(colours = c("orange", "blue")) +
+    xlab(genepair[1]) + ylab(genepair[2]) + theme_minimal() +
     NULL
-
+  if (fittedline) {
+    g = g +
+      geom_smooth(colour = "black", fill = NA, linetype = "dashed",
+                  method = "lm") +
+      NULL
+  }
   return(g)
 }
 

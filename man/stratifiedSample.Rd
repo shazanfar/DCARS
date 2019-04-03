@@ -4,16 +4,18 @@
 \alias{stratifiedSample}
 \title{stratifiedSample}
 \usage{
-stratifiedSample(stats)
+stratifiedSample(stats, length = 100)
 }
 \arguments{
 \item{stats}{a vector of statistics}
+
+\item{length}{rough number of indices to extract}
 }
 \value{
 \code{vector} a vector of indices for the statistics that should be used for permutation testing
 }
 \description{
-the stratifiedSample function
+the stratifiedSample function takes in a vector of statistics, and returns a vector of indices for the statistics that should be used for permutation testing
 }
 \examples{
 
