@@ -1,5 +1,11 @@
-DCARS <img src="man/figures/hex.png" align="right"  height="250" width="250"/>
-======================================================
+---
+title: "Differential Correlation across Ranked Samples"
+author: "Shila Ghazanfar"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    keep_md: true
+---
 
 Differential Correlation across Ranked Samples
 
@@ -9,23 +15,31 @@ Overview
 **DCARS** is a flexible statistical approach which uses local weighted correlations to build a powerful and robust statistical test to identify significant variation in levels of concordance across a ranking of samples. This has the potential to discover biologically informative relationships between genes across a variable of interest, such as survival outcome. Read more about **DCARS** in [Bioinformatics](https://doi.org/10.1093/bioinformatics/bty698).
 
 
-
 Installation
 --------
 
-```r
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning  = FALSE,message = FALSE)
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r, eval=FALSE}
 # Install the development version from GitHub:
 # install.packages("devtools")
 devtools::install_github("shazanfar/DCARS")
+```
+
+```{r}
 library(DCARS)
 ```
+
 
 Usage
 -----
 
 The following example calculates the DCARS test statistic using the skin cutaneous melanoma (SKCM) TCGA dataset, along survival ranking. First it does so for a single gene pair, SKP1 and SKP2, and then EIF3C and EIF5B. Then DCARS selects the top 10 gene pairs after calculating statistics across the STRING network.
 
-```r
+```{r}
 data(STRING)
 data(SKCM)
 SKCM_rank = t(apply(SKCM,1,rank))
@@ -66,7 +80,7 @@ sort(SKCM_stats,decreasing=TRUE)[1:10]
 
 To calculate p-values associated with these tests quickly, we use permutation tests over a stratified sample of gene pairs
 
-```r
+```{r}
 globalCors = apply(STRING, 1, function(x) cor(SKCM_rank[x[1],], SKCM_rank[x[2],]))
 
 # first take a stratified sample of gene pairs
@@ -83,7 +97,7 @@ permstats = DCARSacrossNetwork(SKCM_rank,
                                niter = niter,
                                weightedConcordanceFunction = weightedPearson_matrix,
                                weightedConcordanceFunctionW = "matrix",
-                               verbose = TRUE,
+                               verbose = FALSE,
                                extractPermutationTestStatistics = TRUE)
 
 res = estimatePvaluesSpearman(stats = SKCM_stats, 
@@ -108,7 +122,7 @@ SKCM_signif_edges_FDR
 
 Thresholding on unadjusted DCARS p-values (P-value < 0.05) to explore an unweighted network
 
-```r
+```{r}
 # extract these significant edges
 SKCM_signif_edges = STRING[res$pval < 0.05,]
 
@@ -134,11 +148,11 @@ plot(induced_subgraph(SKCM_signif_graph, V(SKCM_signif_graph)[cm$membership==4])
 
 Treating DCARS statistics as a network edge weight
 
-```r
+```{r}
 library(igraph)
 SKCM_graph = graph.edgelist(STRING, directed = FALSE)
 E(SKCM_graph)$weight = SKCM_stats
-E(SKCM_graph)$pvalweight = -log10(permpvals)
+E(SKCM_graph)$pvalweight = -log10(res$pval)
 
 # Graph the Ego network associated with SKP1 with 
 plotEgoNetwork(hubnode = c("SKP1"), network = SKCM_graph, weight = "weight")
@@ -174,7 +188,7 @@ Further interrogation
 
 Examine the weighted correlation vector for given genepairs. e.g. we observe a positive association between SKP1 and SKP2, which deteriorates along the sample rankings.
 
-```r
+```{r}
 # calculate the weighted correlation vectors across the network
 SKCM_wcor = t(DCARSacrossNetwork(SKCM_rank,
                                edgelist = STRING,
@@ -186,7 +200,7 @@ plotWCorLine(SKCM_wcor, gene = "SKP1")
 
 Examine the significant weighted correlations in terms of clustered pathways
 
-```r
+```{r}
 SKCM_signif_wcor = t(DCARSacrossNetwork(SKCM_rank,
                                         edgelist = SKCM_signif_edges,
                                         W = W, 
@@ -196,7 +210,8 @@ SKCM_signif_wcor = t(DCARSacrossNetwork(SKCM_rank,
 plotWcorsClusterPathway(SKCM_signif_wcor,cluster = TRUE, cutk = 6)
 ```
 
-## Author
 
-* **Shila Ghazanfar**  - [@shazanfar](https://twitter.com/shazanfar)
+```{r}
+sessionInfo()
+```
 
