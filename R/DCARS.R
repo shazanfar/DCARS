@@ -538,6 +538,56 @@ weightedPearson_matrix = function(x, y, W) {
 
 ##############################################
 
+#' the weightedSpearman function
+#'
+#' @title weightedSpearman
+#' @param x x and y are data vectors
+#' @param y x and y are data vectors
+#' @param w weight vector, values should be between 0 and 1
+#' @return \code{numeric} weighted correlation value between x and y
+
+#' @examples
+#'
+#' x = rnorm(100)
+#' y = rnorm(100)
+#' w = runif(100)
+#' weightedSpearman(x,y,w)
+#'
+#' @export
+
+weightedSpearman = function(x,y,w) {
+  xr = rank(x)
+  yr = rank(y)
+  return(weightedPearson(xr,yr,w))
+}
+
+##############################################
+
+#' The weightedSpearman_matrix function calculates a vector of weighted correlations for two given data vectors, for a matrix of given weights.
+#'
+#' @title weightedSpearman_matrix
+#' @param x x and y are data vectors
+#' @param y x and y are data vectors
+#' @param W weight matrix, values should be between 0 and 1, number of columns should be the same as length(x) and length(y)
+#' @return \code{vector} weighted correlation values between x and y
+
+#' @examples
+#'
+#' x = rnorm(100)
+#' y = rnorm(100)
+#' W = weightMatrix(100)
+#' weightedSpearman_matrix(x,y,w)
+#'
+#' @export
+
+weightedSpearman_matrix = function(x,y,W) {
+  xr = rank(x)
+  yr = rank(y)
+  return(weightedPearson_matrix(xr,yr,W))
+}
+
+##############################################
+
 #' the stratifiedSample function
 #'
 #' @title stratifiedSample
