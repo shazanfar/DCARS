@@ -739,6 +739,100 @@ weightedVariance_matrix = function(x, y = NULL, W) {
 
 ##############################################
 
+#' The stretch function calculates a 'stretched'/standardised vector of weighted correlations, using previously calculated upper and lower bounds of the statistic (same length vectors). Values are stretched higher or lower symmetrically around 0.
+#'
+#' @title stretch
+#' @param wcor weighted correlation vector
+#' @param upper either single numeric or vector of same length as wcor for upper bound of correlation. Default 1
+#' @param lower either single numeric or vector of same length as wcor for lower bound of correlation. Default -1
+#' @return \code{vector} standardised weighted correlation vector
+
+#' @examples
+#'
+#' x = pmax(0,rnorm(100))
+#' y = pmax(0,rnorm(100))
+#' w = runif(100)
+#' wcor = weightedKendallStar(x,y,w)
+#' stretch(wcor, upper = 0.8, lower = -0.3)
+#'
+#' @export
+
+stretch = function(wcor,upper = 1,lower = -1) {
+  # given a vector of observed weighted correlations,
+  # and previously calculated upper and lower bounds of the statistic (same length vectors)
+  # calculate a 'stretched'/standardised vector of weighted correlations
+
+  if (length(upper) == 1 & length(lower) == 1 & upper[1] == 1 & lower[1] == -1) return(wcor)
+
+  if (length(wcor) != length(upper) | length(wcor) != length(lower)) stop("Need upper and lower bounds to have same length as weighted correlation")
+
+  swcor = rep(0,length(wcor))
+
+  pos = wcor > 0 # logical vector of positive wcors
+  neg = wcor < 0 # logical vector of negative wcors
+
+  swcor[pos] <- wcor[pos]/upper[pos] # stretch upwards
+
+  swcor[neg] <- wcor[neg]/(-lower[neg]) # stretch downwards, retaining sign
+
+  return(swcor)
+}
+
+##############################################
+
+#' The boundsKendallStar function calculates the upper and lower bounds the weighted zero-inflated Kendall's tau star association measure, given a matrix containing a number of weights.
+#'
+#' @title boundsKendallStar
+#' @param x data vector
+#' @param y data vector
+#' @param W weight matrix, number of columns correspond to length of x and y.
+#' @return \code{list} list with two objects named "upper" and "lower", vectors of upper and lower bounds on the association measure
+
+#' @examples
+#'
+#' x = pmax(0,rnorm(100))
+#' y = pmax(0,rnorm(100))
+#' w = runif(100)
+#' wcor = weightedKendallStar(x,y,w)
+#' boundsKendallStar(x,y,w)
+#'
+#' @export
+
+boundsKendallStar = function(x,y,W) {
+  # for data vectors x and y, calculate the upper and lower bounds
+  # on the weighted zero-inflated Kendall's tau star association measure
+  # given a matrix containing a number of weights
+
+  # output is a list containing vectors of upper and lower bounds
+  # on the association measure
+
+  # note this only depends on the weighted proportion of
+  # samples with zero values
+
+  require(Matrix)
+
+  if (!is.matrix(W)) {
+    W <- t(as.matrix(W))
+  }
+
+  x_zero = 1*(x == 0)
+  y_zero = 1*(y == 0)
+  rowSums_W = Matrix::rowSums(W)
+
+  p_x_weighted = ( W %*% x_zero ) / rowSums_W
+  p_y_weighted = ( W %*% y_zero ) / rowSums_W
+
+  bound_upper = 1 - pmax(p_x_weighted^2, p_y_weighted^2)
+  bound_lower = pmax(0, (1 - p_x_weighted - p_y_weighted))^2 - 2*(1-p_x_weighted)*(1-p_y_weighted)
+
+  return(list(lower = c(bound_lower),
+              upper = c(bound_upper)
+  ))
+
+}
+
+##############################################
+
 #' the stratifiedSample function
 #'
 #' @title stratifiedSample
