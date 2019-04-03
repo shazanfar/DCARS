@@ -283,21 +283,24 @@ DCARSacrossNetwork = function(dat,edgelist,edgeNames = rownames(edgelist),...) {
 
   if (is.null(edgeNames)) {
     if (is.null(rownames(edgelist))) {
-      edgeNames = apply(edgelist,1,function(x)paste0(sort(x[1:2]),collapse="_"))
-    } else {
-    edgeNames = rownames(edgelist)
+      edgeNames = apply(edgelist, 1, function(x) paste0(sort(x[1:2]),
+                                                        collapse = "_"))
+    }
+    else {
+      edgeNames = rownames(edgelist)
     }
   }
-
-  DCARSresult = apply(edgelist[,1:2],1,function(x)DCARS(dat=dat,xname = x[1],yname = x[2],...))
+  DCARSresult = apply(edgelist[, 1:2, drop = FALSE], 1, function(x) DCARS(dat = dat,
+                                                                          xname = x[1], yname = x[2], ...))
   if (is.matrix(DCARSresult)) {
     colnames(DCARSresult) <- edgeNames
-  } else {
-  names(DCARSresult) <- edgeNames
   }
-
+  else {
+    names(DCARSresult) <- edgeNames
+  }
   return(DCARSresult)
 }
+
 
 ##############################################
 
