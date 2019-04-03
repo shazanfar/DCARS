@@ -301,6 +301,55 @@ DCARSacrossNetwork = function(dat,edgelist,edgeNames = rownames(edgelist),...) {
   return(DCARSresult)
 }
 
+##############################################
+
+#' The pospos function calculates the number of observations that are positive in both x and y. Used for calculating weighted Kendall tau measure of association
+#'
+#' @title pospos
+#' @param x numeric vector of non-negative data x
+#' @param y numeric vector of non-negative data y
+#' @param offset should 1 be added when pospos is 0 or all
+#' @return \code{numeric} of weighted correlations for the sequence of weights given
+
+#' @examples
+#'
+#' x = pmax(0,rnorm(100))
+#' y = pmax(0,rnorm(100))
+#' pospos(x,y,offset = TRUE)
+#'
+#' @export
+
+pospos = function(x,y, offset = TRUE) {
+  # offset means either adding or subtracting 1 so that the proportion is not 0 or 1.
+
+  pospos = x > 0 & y > 0
+  if (offset) {
+    if (sum(pospos) == length(pospos)) pospos[1] <- FALSE
+    if (sum(pospos) == 0) pospos[1] <- TRUE
+  }
+  return(mean(pospos)) # small pospos means many zeros
+}
+
+##############################################
+
+#' The logistic function calculates the (inverse) logistic for a given p, where p lies between 0 and 1. Large values indicates many zeros.
+#'
+#' @title logistic
+#' @param x numeric vector of non-negative data x
+#' @param y numeric vector of non-negative data y
+#' @param offset should 1 be added when pospos is 0 or all
+#' @return \code{numeric} of weighted correlations for the sequence of weights given
+
+#' @examples
+#'
+#' p = seq(0.1,0.9, length.out = 100)
+#' l = logistic(p)
+#' plot(p,l)
+#'
+#' @export
+
+logistic = function(p) log((1-p)/(p))
+
 
 ##############################################
 
