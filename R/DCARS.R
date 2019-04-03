@@ -393,6 +393,108 @@ prop_nonzero_matrix = function(dat, PPI, offset = TRUE) {
 
 ##############################################
 
+#' the estimatePvaluesSpearman function more accurately estimates p-values by taking into account the relationship between the global correlation and the distribution of the permuted Spearman-based DCARS test statistics.
+#'
+#' @title estimatePvaluesSpearman
+#' @param stats a named vector of observed DCARS test statistics, names should appear in names of globalCor
+#' @param globalCors a named vector containing global spearman correlation for each gene pair
+#' @param permstats a named list containing permuted test statistics, names should appear in names of globalCor
+#' @param usenperm logical to use number of permutations to select nearest genepairs
+#' @param nperm number of permutations, used is usenperm = TRUE
+#' @param maxDist numeric maximum difference in globalCor to consider for permutations, only used if usenperm = FALSE
+#' @param plot logical default FALSE, if TRUE plots the globalCor against mean of permuted test statistics, and shows fitted polynomial
+#' @param verbose logical default FALSE, if TRUE prints genepair names
+#' @return \code{data.frame}
+
+#' @examples
+#'
+#'
+#' @export
+
+estimatePvaluesSpearman = function(stats, globalCors, permstats,usenperm = FALSE, nperm = 10000, maxDist = 0.1, plot = FALSE, verbose = FALSE) {
+  # this function more accurately estimates p-values by taking into account the relationship between the global correlation and the distribution of the permuted Spearman-based DCARS test statistics.
+
+  # permstats is a named list containing permuted test statistics, names should appear in names of globalCor
+  # globalCor is a named vector containing global spearman correlation for each gene pair
+  # stats is a named vector of observed DCARS test statistics, names should appear in names of globalCor
+  # usenperm logical to use number of permutations to select nearest genepairs
+  # maxDist numeric maximum difference in globalCor to consider for permutations
+  # plot logical default FALSE, if TRUE plots the globalCor against mean of permuted test statistics, and shows fitted polynomial
+  # verbose logical default FALSE, if TRUE prints genepair names
+
+  if (plot) {
+    plot(abs(globalCors[names(permstats)]), unlist(lapply(permstats, function(x)mean(unlist(x)))),
+         xlab = "Absolute global Spearman correlation",
+         ylab = "Mean of permuted statistics")
+  }
+
+  require(reshape)
+
+  # must contain "stat" and "globalCor"
+  permstatsDF = data.frame(genepair = rep(names(permstats), times = unlist(lapply(permstats,function(x)length(unlist(x))))),
+                           stat = unlist(permstats))
+  permstatsDF$globalCor = globalCors[permstatsDF$genepair]
+
+  results = sapply(names(stats), function(genepair) {
+
+    if (verbose) {
+      print(genepair)
+    }
+
+    # gene pair specific values
+    stat = stats[genepair]
+    globalCor = abs(globalCors[genepair])
+
+    # start calculating
+    permstatsDF$dist = abs(permstatsDF$globalCor - globalCor)
+
+    # either take top nperm, or specify a distance allowed
+    if (usenperm) {
+      if (nperm >= nrow(permstatsDF)) {
+        message("nperm given is larger than or equal to total number of permutations... using all permutations")
+        permstatsDF_sorted_sub = permstatsDF
+      } else {
+        permstatsDF_sorted = sort_df(permstatsDF, "dist")
+        permstatsDF_sorted_sub = permstatsDF_sorted[1:nperm,]
+      }
+    } else {
+      if (is.null(maxDist)) {
+        message("usenperm set as FALSE, but maxDist not given... defaulting to maxDist = 0.1")
+        maxDist = 0.1
+      }
+      permstatsDF_sorted_sub = subset(permstatsDF, dist < maxDist)
+      if (nrow(permstatsDF_sorted_sub) == 0) {
+        message("no permutations found within given maxDist... using all permutations instead")
+        permstatsDF_sorted_sub = permstatsDF
+      }
+    }
+    permstats_sub = permstatsDF_sorted_sub$stat
+    if (length(permstats_sub) == 0) error("please set a larger maxDist, or set a larger usenperm")
+
+    pval = mean(permstats_sub >= stat)
+    if (pval == 0) pval = 0.5/length(permstats_sub)
+    nperm = nrow(permstatsDF_sorted_sub)
+    globalCorMin = min(permstatsDF_sorted_sub$globalCor)
+    globalCorMax = max(permstatsDF_sorted_sub$globalCor)
+
+    return(data.frame(genepair = genepair,
+                      stat = stat,
+                      globalCor = globalCor,
+                      pval = pval,
+                      nperm = nperm,
+                      globalCorMin = globalCorMin,
+                      globalCorMax = globalCorMax
+    ))
+  }, simplify = FALSE)
+  resultsDF = do.call(rbind, results)
+  return(resultsDF)
+
+
+}
+
+
+##############################################
+
 #' Performs Fisher's Z Transformation test for differential correlation.
 #'
 #' @title fisherZtransformTest

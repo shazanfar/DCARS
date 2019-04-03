@@ -13,12 +13,16 @@ plotColouredExpression(branchData, genepair, subsetBranch = NULL,
 \item{genepair}{is either a single character string with an underscore, or a two length character vector}
 
 \item{subsetBranch}{subsetBranch is a character vector containing the names of the branches to be plotted. If NULL it will plot all branches}
+
+\item{n}{number of panels to split ranked samples into, default 3.}
+
+\item{fittedline}{logical default TRUE, add a lm straight line to the plot}
 }
 \value{
 \code{ggplot} a ggplot object of scatterplots of expression split by sample ordering
 }
 \description{
-the plotColouredExpression function plots a 3 panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
+the plotColouredExpression function plots an n-panel scatterplot of the gene pairs split by early, mid, and late in the sample ordering.
 }
 \examples{
 
