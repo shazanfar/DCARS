@@ -2,7 +2,7 @@
 % Please edit documentation in R/DCARS.R
 \name{plotWcorsClusterPathway}
 \alias{plotWcorsClusterPathway}
-\title{plotWcorsClusterPathway plots network graphs with most represented pathways labelled}
+\title{plotWcorsClusterPathway}
 \usage{
 plotWcorsClusterPathway(sigWcorsList, pathways = hallmarks,
   geneUniverse = NULL, cutk = 15, topPathways = 2, cluster = FALSE,
@@ -27,7 +27,7 @@ plotWcorsClusterPathway(sigWcorsList, pathways = hallmarks,
 \code{plot} plots of igraph objects
 }
 \description{
-the plotWcorsClusterPathway function
+the plotWcorsClusterPathway function plots network graphs with most represented pathways labelled
 }
 \examples{
 

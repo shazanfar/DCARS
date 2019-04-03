@@ -2,7 +2,7 @@
 % Please edit documentation in R/DCARS.R
 \name{plotOrderedExpression}
 \alias{plotOrderedExpression}
-\title{plotOrderedExpression plots expression vectors along branches and genes as ribbon plots}
+\title{plotOrderedExpression}
 \usage{
 plotOrderedExpression(branchData, gene, xvals = NULL,
   subsetBranch = NULL, facet = FALSE)
@@ -22,7 +22,7 @@ plotOrderedExpression(branchData, gene, xvals = NULL,
 \code{ggplot} a ggplot object for ribbon plot with points
 }
 \description{
-the plotOrderedExpression function
+the plotOrderedExpression function plots expression vectors along branches and genes as ribbon plots
 }
 \examples{
 

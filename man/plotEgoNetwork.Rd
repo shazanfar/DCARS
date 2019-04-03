@@ -2,7 +2,7 @@
 % Please edit documentation in R/DCARS.R
 \name{plotEgoNetwork}
 \alias{plotEgoNetwork}
-\title{plotEgoNetwork plots network graphs with edges coloured by weights in the network}
+\title{plotEgoNetwork}
 \usage{
 plotEgoNetwork(hubnode, network, weight = "weight", subset = FALSE,
   thresh = NULL)
@@ -20,7 +20,7 @@ plotEgoNetwork(hubnode, network, weight = "weight", subset = FALSE,
 \code{igraph} object containing the network graphed. Produces an igraph plot
 }
 \description{
-the plotEgoNetwork function
+the plotEgoNetwork function plots network graphs with edges coloured by weights in the network
 }
 \examples{
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/DCARS.R
 \name{plotNetworkPathway}
 \alias{plotNetworkPathway}
-\title{plotNetworkPathway plots network graphs with most represented pathways labelled}
+\title{plotNetworkPathway}
 \usage{
 plotNetworkPathway(sigPairsList, minCommunity = 10, pathways = NULL,
   geneUniverse = NULL)
@@ -20,7 +20,7 @@ plotNetworkPathway(sigPairsList, minCommunity = 10, pathways = NULL,
 \code{plot} plots of igraph objects
 }
 \description{
-the plotNetworkPathway function
+the plotNetworkPathway function plots network graphs with most represented pathways labelled
 }
 \examples{
 

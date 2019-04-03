@@ -1250,9 +1250,9 @@ plotColouredExpression = function(branchData, genepair, subsetBranch = NULL, n =
 
 ##############################################
 
-#' the plotEgoNetwork function
+#' the plotEgoNetwork function plots network graphs with edges coloured by weights in the network
 #'
-#' @title plotEgoNetwork plots network graphs with edges coloured by weights in the network
+#' @title plotEgoNetwork
 #' @param hubnode is a character vector of node(s) to include as hub nodes
 #' @param g is an igraph network, with E(g)[[weight]] given as DCARS test statistics
 #' @param subset is a logical asking if you should subset based on the weight (default FALSE)
@@ -1321,9 +1321,9 @@ plotEgoNetwork = function(hubnode, network, weight = "weight", subset = FALSE, t
 
 ##############################################
 
-#' the plotWCorLine function
+#' the plotWCorLine function plots weighted correlation vectors as line plots
 #'
-#' @title plotWCorLine plots weighted correlation vectors as line plots
+#' @title plotWCorLine
 #' @param wcorsList is a list of matrices, with each matrix gene pair x samples weighted correlation vectors, assumed that they have same number of rows
 #' @param gene is either a logical vector matching rows of entries in wcorsList, or a character of a gene
 #' @return \code{ggplot} object with line plots
@@ -1400,9 +1400,9 @@ plotWCorLine = function(wcorsList, gene) {
 
 ##############################################
 
-#' the plotOrderedExpression function
+#' the plotOrderedExpression function plots expression vectors along branches and genes as ribbon plots
 #'
-#' @title plotOrderedExpression plots expression vectors along branches and genes as ribbon plots
+#' @title plotOrderedExpression
 #' @param branchData is a list containing matrices of the cell expression per branch, assumed that the columns of each matrix in branchData is ordered by pseudotime. If branchData is not given as a list, it will be converted into a list containing branchData.
 #' @param gene is either a single character string with an underscore, or a two length character vector
 #' @param xvals is a list containing the x-values associated with the samples in branchData (if NULL, samples will just be plotted against their rank)
@@ -1491,9 +1491,9 @@ plotOrderedExpression = function(branchData, gene, xvals = NULL, subsetBranch = 
 
 ##############################################
 
-#' the plotNetworkPathway function
+#' the plotNetworkPathway function plots network graphs with most represented pathways labelled
 #'
-#' @title plotNetworkPathway plots network graphs with most represented pathways labelled
+#' @title plotNetworkPathway
 #' @param sigPairsList list of significant pairs for branches, in igraph network form
 #' @param minCommunity minimum number of genes in community to annotate most represented
 #' @param pathways is a named list containing gene sets for querying, if left NULL defaults to REACTOME c2.all.v6.1.symbols.gmt downloaded from MSigDB
@@ -1602,9 +1602,9 @@ plotNetworkPathway = function(sigPairsList, minCommunity = 10, pathways = NULL, 
 
 ##############################################
 
-#' the plotWcorsClusterPathway function
+#' the plotWcorsClusterPathway function plots network graphs with most represented pathways labelled
 #'
-#' @title plotWcorsClusterPathway plots network graphs with most represented pathways labelled
+#' @title plotWcorsClusterPathway
 #' @param sigWcorsList named list of weighted correlation matrices per branch, rows are gene pairs and columns are ordered samples, if it is not a list it will be converted into a list
 #' @param pathways is a named list containing gene sets for querying, if left NULL defaults to REACTOME c2.all.v6.1.symbols.gmt downloaded from MSigDB
 #' @param geneUniverse is the universe of genes measured, if null its taken as all the genes in the sigWcorsList

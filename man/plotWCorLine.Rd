@@ -2,7 +2,7 @@
 % Please edit documentation in R/DCARS.R
 \name{plotWCorLine}
 \alias{plotWCorLine}
-\title{plotWCorLine plots weighted correlation vectors as line plots}
+\title{plotWCorLine}
 \usage{
 plotWCorLine(wcorsList, gene)
 }
@@ -15,7 +15,7 @@ plotWCorLine(wcorsList, gene)
 \code{ggplot} object with line plots
 }
 \description{
-the plotWCorLine function
+the plotWCorLine function plots weighted correlation vectors as line plots
 }
 \examples{
 
