@@ -1058,7 +1058,7 @@ boundsKendallStar = function(x,y,W = 1) {
 #'
 #' @export
 
-sweightedKendallStar = function(x,y,w) {
+sweightedKendallStar = function(x,y,w = 1) {
   # convenience function to get swcor for weighted zero-inflated kendall's tau
 
   wcor = weightedKendallStar(x,y,w)
