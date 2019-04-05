@@ -801,7 +801,7 @@ weightedSpearman_matrix = function(x,y,W) {
 #'
 #' @export
 
-weightedKendallStar = function(x, y, w) {
+weightedKendallStar = function(x, y, w = 1) {
 
   if (any(x < 0 | y < 0)) stop("x and/or y values have negative values")
 
@@ -998,7 +998,7 @@ stretch = function(wcor,upper = 1,lower = -1) {
 #'
 #' @export
 
-boundsKendallStar = function(x,y,W) {
+boundsKendallStar = function(x,y,W = 1) {
   # for data vectors x and y, calculate the upper and lower bounds
   # on the weighted zero-inflated Kendall's tau star association measure
   # given a matrix containing a number of weights
@@ -1010,6 +1010,10 @@ boundsKendallStar = function(x,y,W) {
   # samples with zero values
 
   require(Matrix)
+
+  if (length(x) != length(y)) stop("x and y should have the same length")
+
+  if (W == 1) W <- rep(W, length(x))
 
   if (!is.matrix(W)) {
     W <- t(as.matrix(W))
