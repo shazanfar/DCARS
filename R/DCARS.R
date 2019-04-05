@@ -805,10 +805,6 @@ weightedKendallStar = function(x, y, w) {
 
   if (any(x < 0 | y < 0)) stop("x and/or y values have negative values")
 
-  if (length(x) != length(y)) stop("x and y should have the same length")
-
-  if (length(w) == 1) w <- rep(w, length(x))
-
   posx = x > 0
   posy = y > 0
 
