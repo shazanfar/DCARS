@@ -4,7 +4,7 @@
 \alias{weightedKendallStar}
 \title{weightedKendallStar}
 \usage{
-weightedKendallStar(x, y, w)
+weightedKendallStar(x, y, w = 1)
 }
 \arguments{
 \item{x}{x and y are non-negative data vectors}

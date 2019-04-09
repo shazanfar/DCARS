@@ -4,7 +4,7 @@
 \alias{sweightedKendallStar}
 \title{sweightedKendallStar}
 \usage{
-sweightedKendallStar(x, y, w)
+sweightedKendallStar(x, y, w = 1)
 }
 \arguments{
 \item{x}{data vector}

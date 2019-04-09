@@ -4,7 +4,7 @@
 \alias{boundsKendallStar}
 \title{boundsKendallStar}
 \usage{
-boundsKendallStar(x, y, W)
+boundsKendallStar(x, y, W = 1)
 }
 \arguments{
 \item{x}{data vector}

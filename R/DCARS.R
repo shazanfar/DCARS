@@ -1013,7 +1013,7 @@ boundsKendallStar = function(x,y,W = 1) {
 
   if (length(x) != length(y)) stop("x and y should have the same length")
 
-  if (W == 1) W <- rep(W, length(x))
+  if (identical(W,1)) W <- rep(W, length(x))
 
   if (!is.matrix(W)) {
     W <- t(as.matrix(W))
