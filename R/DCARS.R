@@ -679,7 +679,14 @@ weightedcor = function(x,y,w) {
 #'
 #' @export
 
-weightedPearson = function(x, y, w) {
+weightedPearson = function(x, y, w = 1) {
+
+  if (length(x) != length(y)) stop("data must be the same length")
+
+  if (length(w) == 1) {
+    w <- rep(w, length(x))
+  }
+
   nw = sum(w)
   wssx = nw * sum(w * (x^2)) - sum(w * x)^2
   wssy = nw * sum(w * (y^2)) - sum(w * y)^2
@@ -751,7 +758,10 @@ weightedPearson_matrix = function(x, y, W) {
 #'
 #' @export
 
-weightedSpearman = function(x,y,w) {
+weightedSpearman = function(x,y,w = 1) {
+
+  if (length(x) != length(y)) stop("data must be the same length")
+
   xr = rank(x)
   yr = rank(y)
   return(weightedPearson(xr,yr,w))

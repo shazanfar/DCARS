@@ -4,7 +4,7 @@
 \alias{weightedSpearman}
 \title{weightedSpearman}
 \usage{
-weightedSpearman(x, y, w)
+weightedSpearman(x, y, w = 1)
 }
 \arguments{
 \item{x}{x and y are data vectors}

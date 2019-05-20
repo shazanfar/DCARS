@@ -4,7 +4,7 @@
 \alias{weightedPearson}
 \title{weightedPearson}
 \usage{
-weightedPearson(x, y, w)
+weightedPearson(x, y, w = 1)
 }
 \arguments{
 \item{x}{x and y are data vectors}
