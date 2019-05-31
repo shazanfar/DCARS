@@ -2,7 +2,7 @@
 % Please edit documentation in R/DCARS.R
 \name{weightedSpearman_matrix}
 \alias{weightedSpearman_matrix}
-\title{weightedSpearman_matrix}
+\title{weightedSpearman_matrix (not recommended to run, use weightedSpearman() instead)}
 \usage{
 weightedSpearman_matrix(x, y, W)
 }

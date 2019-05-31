@@ -760,18 +760,28 @@ weightedPearson_matrix = function(x, y, W) {
 
 weightedSpearman = function(x,y,w = 1) {
 
-  if (length(x) != length(y)) stop("data must be the same length")
+  if (any(x < 0 | y < 0)) {
+    stop("x and/or y values have negative values")
+  }
+  if (length(x) != length(y)) {
+    stop("x and y should have the same length")
+  }
+  if (length(w) == 1) {
+    w <- rep(w, length(x))
+  }
 
-  xr = rank(x)
-  yr = rank(y)
-  return(weightedPearson(xr,yr,w))
+  keep = w > 0
+
+  xr = rank(x[keep])
+  yr = rank(y[keep])
+  return(weightedPearson(xr, yr, w[keep]))
 }
 
 ##############################################
 
 #' The weightedSpearman_matrix function calculates a vector of weighted correlations for two given data vectors, for a matrix of given weights.
 #'
-#' @title weightedSpearman_matrix
+#' @title weightedSpearman_matrix (not recommended to run, use weightedSpearman() instead)
 #' @param x x and y are data vectors
 #' @param y x and y are data vectors
 #' @param W weight matrix, values should be between 0 and 1, number of columns should be the same as length(x) and length(y)
@@ -787,9 +797,66 @@ weightedSpearman = function(x,y,w = 1) {
 #' @export
 
 weightedSpearman_matrix = function(x,y,W) {
+  # not recommended to run
+
   xr = rank(x)
   yr = rank(y)
   return(weightedPearson_matrix(xr,yr,W))
+}
+
+##############################################
+
+#' the weightedZISpearman function calculates weighted rho\*, where rho\* is described in Pimentel et al (2009). This association measure is defined for zero-inflated, non-negative random variables.
+#'
+#' @title weightedZISpearman
+#' @param x x and y are non-negative data vectors
+#' @param y x and y are non-negative data vectors
+#' @param w weight vector, values should be between 0 and 1
+#' @return \code{numeric} weighted rho* association value between x and y
+#'
+#'  Pimentel, Ronald Silva, "Kendall's Tau and Spearman's Rho for Zero-Inflated Data" (2009). Dissertations. 721. https://scholarworks.wmich.edu/dissertations/721
+
+#' @examples
+#'
+#' x = pmin(0,rnorm(100))
+#' y = pmin(0,rnorm(100))
+#' w = runif(100)
+#' weightedZISpearman(x,y,w)
+#'
+#' @export
+
+weightedZISpearman <- function(x, y, w = 1) {
+
+  # needs the original values, not the ranks
+
+  if (any(x < 0 | y < 0)) {
+    stop("x and/or y values have negative values")
+  }
+  if (length(x) != length(y)) {
+    stop("x and y should have the same length")
+  }
+  if (length(w) == 1) {
+    w <- rep(w, length(x))
+  }
+
+  posx = x > 0
+  posy = y > 0
+  pospos = posx & posy
+
+  p_11 = sum(w * pospos)/sum(w)
+  p_00 = sum(w * (!posx & !posy))/sum(w)
+  p_01 = sum(w * (!posx & posy))/sum(w)
+  p_10 = sum(w * (posx & !posy))/sum(w)
+  rho_11 = weightedSpearman(x[pospos], y[pospos], w = w[pospos])
+  rho_star = p_11 * (p_01 + p_11) * (p_10 + p_11) * rho_11 + 3*(p_00 * p_11 - p_10 * p_01)
+
+  if (is.na(rho_star)) {
+    print("Zero inflated Spearman correlation is undefined, returning Spearman correlation")
+    rho = weightedSpearman(x, y, w = w)
+    return(rho)
+  }
+
+  return(rho_star)
 }
 
 ##############################################
