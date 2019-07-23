@@ -1,7 +1,7 @@
 Package: DCARS
 Type: Package
 Title: Differential Correlation across Ranked Samples
-Version: 0.3.3
+Version: 0.3.4
 Authors@R: person("Shila", "Ghazanfar", role = c("aut", "cre"), email = "shazanfar@gmail.com")
 Maintainer: Shila Ghazanfar <shazanfar@gmail.com>
 Description: DCARS is a flexible statistical approach which uses local weighted correlations to build a powerful and robust statistical test to identify significant variation in levels of concordance across a ranking of samples. This has the potential to discover biologically informative relationships between genes across a variable of interest, such as survival outcome.
