@@ -423,8 +423,8 @@ estimatePvaluesSpearman = function(stats, globalCors, permstats,usenperm = FALSE
   # verbose logical default FALSE, if TRUE prints genepair names
 
   if (plot) {
-    plot(abs(globalCors[names(permstats)]), unlist(lapply(permstats, function(x)mean(unlist(x)))),
-         xlab = "Absolute global Spearman correlation",
+    plot(globalCors[names(permstats)], unlist(lapply(permstats, function(x)mean(unlist(x)))),
+         xlab = "Global Spearman correlation",
          ylab = "Mean of permuted statistics")
   }
 
@@ -433,7 +433,7 @@ estimatePvaluesSpearman = function(stats, globalCors, permstats,usenperm = FALSE
   # must contain "stat" and "globalCor"
   permstatsDF = data.frame(genepair = rep(names(permstats), times = unlist(lapply(permstats,function(x)length(unlist(x))))),
                            stat = unlist(permstats))
-  permstatsDF$globalCor = globalCors[permstatsDF$genepair]
+  permstatsDF$globalCor = globalCors[as.character(permstatsDF$genepair)]
 
   results = sapply(names(stats), function(genepair) {
 
@@ -443,7 +443,7 @@ estimatePvaluesSpearman = function(stats, globalCors, permstats,usenperm = FALSE
 
     # gene pair specific values
     stat = stats[genepair]
-    globalCor = abs(globalCors[genepair])
+    globalCor = globalCors[genepair]
 
     # start calculating
     permstatsDF$dist = abs(permstatsDF$globalCor - globalCor)
@@ -760,9 +760,6 @@ weightedPearson_matrix = function(x, y, W) {
 
 weightedSpearman = function(x,y,w = 1) {
 
-  if (any(x < 0 | y < 0)) {
-    stop("x and/or y values have negative values")
-  }
   if (length(x) != length(y)) {
     stop("x and y should have the same length")
   }
