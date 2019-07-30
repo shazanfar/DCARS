@@ -9,7 +9,8 @@ DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
   weightedConcordanceFunctionW = "vector",
   extractTestStatisticOnly = FALSE, extractWcorSequenceOnly = FALSE,
   plot = FALSE, niter = 100,
-  extractPermutationTestStatistics = FALSE, verbose = FALSE, ...)
+  extractPermutationTestStatistics = FALSE, verbose = FALSE,
+  forceBlock = FALSE, WcorSequenceSummaryFun = sd, ...)
 }
 \arguments{
 \item{dat}{a genes x samples gene expression rank matrix, should be already converted to ranks with first column lowest survival and last column highest survival}
@@ -39,6 +40,10 @@ DCARS(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
 \item{extractPermutationTestStatistics}{if TRUE, extract only the DCARS test statistic without permutation testing}
 
 \item{verbose}{if TRUE, print updates}
+
+\item{forceBlock}{if TRUE, this converts all positive values in weight matrix W to 1, and calculates weighted correlation on the resulting subset. Default FALSE}
+
+\item{WcorSequenceSummaryFun}{Function that defines how the local weighted correlations are summarised, default is the function sd for standard deviation.}
 
 \item{...}{additional arguments passing on to weightMatrix()}
 

@@ -111,6 +111,8 @@ weightMatrix = function(n,
 #' @param extractTestStatisticOnly if TRUE, extract only the DCARS test statistic without permutation testing
 #' @param extractWcorSequence if TRUE, extract only the weighted correlation vector without permutation testing
 #' @param extractPermutationTestStatistics if TRUE, extract only the DCARS test statistic without permutation testing
+#' @param forceBlock if TRUE, this converts all positive values in weight matrix W to 1, and calculates weighted correlation on the resulting subset. Default FALSE
+#' @param WcorSequenceSummaryFun Function that defines how the local weighted correlations are summarised, default is the function sd for standard deviation.
 #' @param verbose if TRUE, print updates
 #' @param ... additional arguments passing on to weightMatrix()
 
@@ -151,10 +153,10 @@ DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
                  weightedConcordanceFunctionW = "vector",
                  extractTestStatisticOnly = FALSE, extractWcorSequenceOnly = FALSE,
                  plot = FALSE, niter = 100, extractPermutationTestStatistics = FALSE,
-                 verbose = FALSE, ...)
+                 verbose = FALSE, forceBlock = FALSE, WcorSequenceSummaryFun = sd,
+                 ...)
 {
-  weightedcor = weightedConcordanceFunction
-
+  # weightedcor = weightedConcordanceFunction
   if (any(!c(xname, yname) %in% rownames(dat))) {
     message("xname and/or yname are not found in rownames(dat), returning NA")
     return(NA)
@@ -168,6 +170,20 @@ DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
   }
   if (!weightedConcordanceFunctionW %in% c("vector","matrix")) {
     stop("Please specify either \"vector\" or \"matrix\" for the weightedConcordanceFunction")
+  }
+  if (all(unique(c(W)) %in% c(0,1))) {
+    message("weight matrix contains binary values, implementing weightedConcordanceFunction by subsetting samples instead")
+    forceBlock = TRUE
+  }
+  if (forceBlock & weightedConcordanceFunctionW != "matrix") {
+    # unsure of the behaviour if matrix is used
+    # treat the weight matrix now as binary and calculate using the samples
+    # without the w
+    weightedcor = function(x,y,w) {
+      weightedConcordanceFunction(x[w > 0],y[w > 0])
+    }
+  } else {
+    weightedcor = weightedConcordanceFunction
   }
   x = dat[xname, ]
   y = dat[yname, ]
@@ -186,7 +202,7 @@ DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
     plot(wcor, type = "l", ylim = c(-1, 1), lwd = 3, col = "blue")
     abline(h = 0, lty = 2)
   }
-  stat = sd(wcor)
+  stat = WcorSequenceSummaryFun(wcor)
   if (extractWcorSequenceOnly & extractTestStatisticOnly) {
     message("both extractWcorSequenceOnly and extractTestStatisticOnly have been specified as TRUE, returning both as a list")
     return(list(wcorSequence = wcor, TestStatistic = stat))
@@ -202,7 +218,7 @@ DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
   if (max(abs(wcor)) < wcormin)
     return(NA)
   if (verbose) {
-    message("performing permutation test")
+    message("Calculating permutation weighted correlation vectors")
   }
   sds = replicate(niter, {
     o = sample(1:length(x))
@@ -215,11 +231,12 @@ DCARS = function(dat, xname, yname, W = NULL, rangeMin = 0, wcormin = 0,
       wcor = weightedcor(xo, yo, W)
     }
 
+    # interpolate points if missing/infinite
     if (any(!is.finite(wcor))) {
       i = which(!is.finite(wcor))
       wcor[i] <- mean(c(wcor[c(i - 1, i + 1)]))
     }
-    sd(wcor)
+    WcorSequenceSummaryFun(wcor)
   })
   if (extractPermutationTestStatistics) {
     if (verbose) {
