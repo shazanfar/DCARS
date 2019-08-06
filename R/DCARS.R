@@ -983,6 +983,7 @@ weightedKendallStar = function(x, y, w = 1) {
 weightedVariance = function(x, y = NULL, w) {
   # args x,w (if y given, it is ignored)
 
+  w <- w/sum(w)
   nw = sum(w)
   wssx = nw * sum(w * (x^2)) - sum(w * x)^2
   return(wssx)
