@@ -200,3 +200,6 @@ plotWcorsClusterPathway(SKCM_signif_wcor,cluster = TRUE, cutk = 6)
 
 * **Shila Ghazanfar**  - [@shazanfar](https://twitter.com/shazanfar)
 
+## Citation
+
+Shila Ghazanfar and others, DCARS: differential correlation across ranked samples, *Bioinformatics*, Volume 35, Issue 5, March 2019, Pages 823--829, <https://doi.org/10.1093/bioinformatics/bty698>
